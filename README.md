@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Bharat Sings
 
-## Getting Started
+### About The Platform
 
-First, run the development server:
+Bharat Sings is a community-driven platform designed for singers, musicians, lyricists, and music enthusiasts to showcase their talent, connect with fellow artists, and grow together. Users can upload their performances, receive constructive feedback from the community, discover and collaborate with musicians across different genres, and learn through live and recorded courses offered by experienced trainers. The platform also aims to bridge the gap between talented artists and opportunities by helping creators build their presence, expand their network, and pursue their musical journey in one unified ecosystem.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+### Tech Stack
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Frontend**: Next.js, Tailwind CSS
+- **Backend**: Node.js, Express.js
+- **Database**: PostgreSQL, Firebase, Redis (For Caching and OTP)
+- **AI Microservice**: Python (FAST API)
+- **Python Libraries For AI Model**: Whisper, Librosa, FFmpeg, PyTorch
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+### ✨ Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 🎤 Talent Showcase
+- Upload singing performances, instrumental music, and original compositions.
+- Create a public profile to showcase your musical journey.
+- Build your presence within the music community.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+### 📝 Community Reviews
+- Receive constructive text reviews from fellow singers, musicians, and listeners.
+- Gain valuable feedback to continuously improve your performances.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 📊 Structured Performance Reviews
+Reviewers can evaluate performances using structured metrics, including:
+- 🎵 Pitch Accuracy
+- 🎙️ Voice Quality
+- 🥁 Rhythm
+- ❤️ Emotion & Expression
+- ⭐ Overall Performance
 
-## Deploy on Vercel
+These structured reviews help artists identify their strengths and areas for improvement.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+---
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 🎓 Music Learning Platform
+- Singers and musicians can become trainers.
+- Create free or paid music courses.
+- Conduct live classes, recorded sessions, and doubt-solving sessions.
+- Learners can enroll in courses and rate trainers upon completion.
+- Trainer leaderboard based on learner ratings.
+
+---
+
+### 🏆 Leaderboards
+- Discover top singers and musicians across different genres.
+- Rankings are based on community ratings and reviews.
+- Trainer leaderboard showcasing the highest-rated instructors.
+
+---
+
+### 🤝 Artist Collaboration
+- Connect with singers, musicians, lyricists, composers, and producers.
+- Post collaboration requests.
+- Find talented artists for your next music project.
+- Chat and collaborate directly on the platform.
+
+---
+
+### 💼 Music Marketplace
+- Sell original songs, lyrics, beats, instrumentals, and music compositions.
+- Purchase music for films, games, advertisements, reels, YouTube videos, and other creative projects.
+- Creators can define pricing and licensing for their work.
+
+---
+
+### 🔍 Talent Discovery
+- Browse artists by genre, ratings, and community reviews.
+- Discover emerging talent from across the music community.
+
+---
+
+### 👤 User Profiles
+- Create a personalized musician profile.
+- Showcase uploaded songs, collaborations, achievements, ratings, and reviews.
+- Build your professional music portfolio.
+
+---
+
+### 🔐 Authentication & Security
+- Secure user registration and login.
+- Protected user accounts and personalized dashboards.
+
+---
+
+### 🚀 Planned Features
+
+### 🤖 AI-Powered Performance Reviews
+- Analyze uploaded songs and music performances.
+- Provide personalized feedback to help artists improve their skills.
+
+---
+
+### 🧠 AI-Based Talent Ranking
+- Analyze community reviews and structured ratings.
+- Identify top-performing singers and musicians across different genres.
+
+---
+
+### 🎯 AI Collaboration Recommendations
+- Recommend suitable singers, musicians, lyricists, composers, and producers based on genre, skills, and preferences.
+- Help artists find the best collaboration partners.
+
+---
+
+### 🎵 AI Marketplace Recommendations
+- Recommend songs and music assets to buyers based on their project requirements and budget.
+- Improve music discovery through intelligent recommendations.
