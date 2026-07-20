@@ -8,7 +8,7 @@ Bharat Sings is a community-driven platform designed for singers, musicians, lyr
 
 - **Frontend**: Next.js, Tailwind CSS
 - **Backend**: Node.js, Express.js
-- **Database**: PostgreSQL
+- **Database**: PostgreSQL, Firebase, Redis (For Caching and OTP)
 - **AI Microservice**: Python (FAST API)
 - **Python Libraries For AI Model**: Whisper, Librosa, FFmpeg, PyTorch
 
