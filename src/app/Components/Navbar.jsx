@@ -5,7 +5,7 @@ import logo from "../Images/logo.jpg";
 function Navbar() {
     return (
         <div className="flex items-center">
-            <Image alt = 'logo' src = {logo} className="w-60 h-30 ml-10" />
+            <Image alt = 'logo' src = {logo} className="md:w-60 md:h-30 md:ml-10 w-60 h-30" />
             <ul className="flex font-[Inter] text-2xl ml-55 gap-10 text-gray">
                 <li className="cursor-pointer">Home</li>
                 <li className="cursor-pointer">Features</li>
