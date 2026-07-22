@@ -1,0 +1,408 @@
+model User {
+    id Int @id @default(autoincrement())
+    email String @unique
+    password String
+    display_name String
+    profile_picture String
+    bio String
+    date_of_birth DateTime
+    gender String
+    country String
+    user_role String
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+    is_active Boolean
+    songs Song[]
+    playlists playlist[]
+    payments Payment[]
+    notifications notification[]
+    carts cart[]
+    trainer_reviews trainer_review[]
+    likes like[]
+    wishlists wishlist[]
+    enrollments enrollment[]
+}
+
+model Song {
+    id Int @id @default(autoincrement())
+    title String
+    description String
+    release_date DateTime
+    duration Int
+    album_id Int
+    album album @relation(fields: [album_id], references: [id])
+    genre_id Int
+    genre genre @relation(fields: [genre_id], references: [id])
+    uploader_id Int
+    uploader User @relation(fields: [uploader_id], references: [id])
+    lyrics_id Int 
+    lyrics lyrics @relation(fields: [lyrics_id], references: [id])
+    audio_file_id Int
+    audio_file audio_file @relation(fields: [audio_file_id], references: [id])
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+    is_published Boolean
+    price Float
+    is_marketplace_item Boolean
+    likes like[]
+    playlist_songs playlist_song[]
+}
+
+model audio_file {
+    id Int @id @default(autoincrement())
+    songs Song[]
+}
+
+model album {
+    id Int @id @default(autoincrement())
+    title String 
+    description String
+    release_date DateTime
+    cover_image String
+    artist_id Int
+    genre_id Int
+    genre genre @relation(fields: [genre_id], references: [id])
+    created_at DateTime @default(now())
+    songs Song[]
+}
+
+model genre {
+    id Int @id @default(autoincrement())
+    name String @unique
+    description String
+    albums album[]
+    songs Song[]
+}
+
+model instrument {
+    id Int @id @default(autoincrement())
+    name String @unique
+    type String
+    description String
+}
+
+model playlist {
+    id Int @id @default(autoincrement())
+    name String
+    description String
+    user_id Int
+    user User @relation(fields: [user_id], references: [id])
+    is_public Boolean
+    created_at DateTime @default(now())
+    playlist_songs playlist_song[]
+}
+
+model playlist_song {
+    id Int @id @default(autoincrement())
+    playlist_id Int
+    playlist playlist @relation(fields: [playlist_id], references: [id])
+    song_id Int
+    song Song @relation(fields: [song_id], references: [id])
+    added_at DateTime @default(now())
+}
+
+model course {
+    id Int @id @default(autoincrement())
+    title String
+    description String
+    category String
+    level String
+    language_id Int
+    language language @relation(fields: [language_id], references: [id])
+    trainer_id Int
+    trainer Trainer @relation(fields: [trainer_id], references: [id])
+    price Float
+    is_published Boolean
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+    certificate_id Int
+    course_reviews course_review[]
+    enrollments enrollment[]
+    live_sessions live_session[]
+}
+
+model course_module {
+    id Int @id @default(autoincrement())
+    course_id Int
+    title String
+    description String
+    order_num Int
+}
+
+model lesson {
+    id Int @id @default(autoincrement())
+    module_id Int
+    title String
+    description String
+    order_num Int
+    video_id Int
+    pdf_id Int
+    assignments assignment[]
+}
+
+model video {
+    id Int @id @default(autoincrement())
+    file_path String
+    duration Int 
+    uploaded_by Int
+    uploaded_at DateTime @default(now())
+}
+
+model pdf {
+    id Int @id @default(autoincrement())
+    file_path String
+    uploaded_by Int
+    uploaded_at DateTime @default(now())
+}
+
+model comment {
+    id Int @id @default(autoincrement())
+    created_at DateTime @default(now())
+    user_id Int
+    likes like[]
+    song_id Int
+}
+
+model song_review {
+    id Int @id @default(autoincrement())
+    user_id Int
+    review_text String
+    rating Int
+    review_type String
+    song_id Int
+    created_at DateTime @default(now())
+}
+
+model course_review {
+    id Int @id @default(autoincrement())
+    user_id Int
+    review_text String
+    rating Int
+    course_id Int
+    course course @relation(fields: [course_id], references: [id])
+    trainer_id Int
+    trainer Trainer @relation(fields: [trainer_id], references: [id])
+    created_at DateTime @default(now())
+}
+
+model subscription_plan {
+    id Int @id @default(autoincrement())
+    name String
+    description String
+    price Float
+    duration_months Int
+    is_active Boolean
+}
+
+model Trainer {
+    id Int @id @default(autoincrement())
+    name String
+    description String
+    is_active Boolean
+    live_sessions live_session[]
+    courses course[]
+    course_reviews course_review[]
+    trainer_reviews trainer_review[]
+}
+
+model Payment {
+    id Int @id @default(autoincrement())
+    user_id Int
+    user User @relation(fields: [user_id], references: [id])
+    amount Float
+    payment_method String
+    status String
+    transaction_id Int
+    transaction Transaction @relation(fields: [transaction_id], references: [id])
+    created_at DateTime @default(now())
+    refunds refund[]
+}
+
+model Transaction {
+    id Int @id @default(autoincrement())
+    payment_id Int
+    transaction_type String
+    amount Float
+    status String
+    created_at DateTime @default(now())
+    payments Payment[]
+}
+
+model notification {
+    id Int @id @default(autoincrement())
+    user_id Int
+    user User @relation(fields: [user_id], references: [id])
+    message String
+    is_read Boolean
+    created_at DateTime @default(now())
+}
+
+model Message {
+    id Int @id @default(autoincrement())
+    sender_id Int
+    receiver_id Int
+    content String
+    sent_at DateTime @default(now())
+    is_read Boolean
+}
+
+model refund {
+    id Int @id @default(autoincrement())
+    payment_id Int
+    payment Payment @relation(fields: [payment_id], references: [id])
+    amount Float
+    reason String
+    status String
+    created_at DateTime @default(now())
+}
+
+model follower {
+    id Int @id @default(autoincrement())
+    follower_id Int
+    followed_id Int
+    followed_type String
+    created_at DateTime @default(now())
+}
+
+model like {
+    id Int @id @default(autoincrement())
+    user_id Int
+    user User @relation(fields: [user_id], references: [id])
+    song_id Int
+    song Song @relation(fields: [song_id], references: [id])
+    comment_id Int
+    comment comment @relation(fields: [comment_id], references: [id])
+    created_at DateTime @default(now())
+}
+
+model certificate {
+    id Int @id @default(autoincrement())
+    user_id Int
+    course_id Int
+    issued_at DateTime @default(now())
+    enrollments enrollment[]
+    certificate_url String
+}
+
+model order {
+    id Int @id @default(autoincrement())
+    user_id Int
+    order_date DateTime @default(now())
+    status String
+    total_amount Float
+    payment_id Int
+    order_items order_item[]
+}
+
+model order_item {
+    id Int @id @default(autoincrement())
+    order_id Int
+    order order @relation(fields: [order_id], references: [id])
+    marketplace_item_id Int
+    price Float
+}
+
+model cart {
+    id Int @id @default(autoincrement())
+    user_id Int
+    user User @relation(fields: [user_id], references: [id])
+    created_at DateTime @default(now())
+    cart_items cart_item[]
+}
+
+model cart_item {
+    id Int @id @default(autoincrement())
+    cart_id Int
+    cart cart @relation(fields: [cart_id], references: [id])
+    marketplace_item_id Int
+    marketplace_item marketplace_item @relation(fields: [marketplace_item_id], references: [id])
+    added_at DateTime @default(now())
+}
+
+model wishlist {
+    id Int @id @default(autoincrement())
+    user_id Int
+    user User @relation(fields: [user_id], references: [id])
+    created_at DateTime @default(now())
+    wishlist_items wishlist_item[]
+}
+
+model wishlist_item {
+    id Int @id @default(autoincrement())
+    wishlist_id Int
+    wishlist wishlist @relation(fields: [wishlist_id], references: [id])
+    marketplace_item_id Int
+    marketplace_item marketplace_item @relation(fields: [marketplace_item_id], references: [id])
+    added_at DateTime @default(now())
+}
+
+model marketplace_item {
+    id Int @id @default(autoincrement())
+    cart_items cart_item[]
+    wishlist_items wishlist_item[]
+}
+
+model trainer_review {
+    id Int @id @default(autoincrement())
+    trainer_id Int
+    trainer Trainer @relation(fields: [trainer_id], references: [id])
+    user_id Int
+    user User @relation(fields: [user_id], references: [id])
+    rating Int
+    review String
+    created_at DateTime @default(now())
+}
+
+model live_session {
+    id Int @id @default(autoincrement())
+    course_id Int
+    course course @relation(fields: [course_id], references: [id])
+    trainer_id Int
+    trainer Trainer @relation(fields: [trainer_id], references: [id])
+    scheduled_at DateTime
+    duration Int
+    status String
+}
+
+model enrollment {
+    id Int @id @default(autoincrement())
+    user_id Int
+    user User @relation(fields: [user_id], references: [id])
+    course_id Int 
+    course course @relation(fields: [course_id], references: [id])
+    enrolled_at DateTime @default(now())
+    progress Float
+    completed Boolean
+    certificate_id Int
+    certificate certificate @relation(fields: [certificate_id], references: [id])
+}
+
+model assignment {
+    id Int @id @default(autoincrement())
+    lesson_id Int
+    lesson lesson @relation(fields: [lesson_id], references: [id])
+    title String
+    description String
+    due_date DateTime
+    max_score Int 
+    completed Boolean
+    score Int
+    created_at DateTime @default(now())
+}
+
+model lyrics {
+    id Int @id @default(autoincrement())
+    content String
+    language_id Int
+    language language @relation(fields: [language_id], references: [id]) 
+    created_by Int
+    created_at DateTime @default(now())
+    songs Song[]
+}
+
+model language {
+    id Int @id @default(autoincrement())
+    name String
+    lyrics lyrics[]
+    courses course[]
+}
