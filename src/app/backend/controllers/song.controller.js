@@ -22,6 +22,10 @@ const createSong = asyncHandler(async (req, res) => {
         }
     });
 
+    if (!song) {
+        throw new ApiError(500, "Error creating the song");
+    }
+
     return res
     .status(200)
     .json(
@@ -30,6 +34,90 @@ const createSong = asyncHandler(async (req, res) => {
             {
                 createdSong: song
             },
-            "Song created successfully")
+            "Song created successfully"
+        )
     );
 });
+
+const findSongs = asyncHandler(async (req, res) => {
+    const songs = await prisma.song.findMany();
+
+    if (!songs) {
+        throw new ApiError(500, "Error finding songs");
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                songs: songs
+            }, 
+            "Successfully found the songs"
+        )
+    );
+});
+
+const findSongsByGenre = asyncHandler(async (req, res) => {
+    let { genre } = req.body;
+
+    if (!genre || genre?.trim() === "") {
+        throw new ApiError(401, "Genre empty or undefined");
+    }
+
+    const songs = await prisma.song.findMany({
+        genre: genre
+    });
+
+    if (!songs) {
+        throw new ApiError(500, "Error finding songs");
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200, 
+            {
+                songs: songs
+            },
+            "Successfully found songs"
+        )
+    );
+});
+
+const findSongsByTitle = asyncHandler(async (req, res) => {
+    let { title } = req.body;
+
+    if (!title || title?.trim() === "") {
+        throw new ApiError(401, "Title empty or undefined");
+    }
+
+    const songs = await prisma.song.findMany({
+        title: title
+    });
+
+    if (!songs) {
+        throw new ApiError(500, "Error finding songs");
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                songs: songs
+            },
+            "Successfully found songs"
+        )
+    )
+});
+
+export {
+    createSong,
+    findSongs,
+    findSongsByGenre,
+    findSongsByTitle
+}
