@@ -1,18 +1,15 @@
 import React from "react";
-import Navbar from "./Components/Navbar";
+import Navbar from "../Components/Navbar";
 import Image from "next/image";
 
-import landingPageTopSection from "./Images/landingPageTopSection.png";
-import landingPageSinger from "./Images/landingPageSinger.jpg";
-import landingPageMusicSign from "./Images/landingPageMusicSign.png";
-import landingPageGuitar from "./Images/landingPageGuitar.png";
+import landingPageTopSection from "../Images/landingPageTopSection.png";
+import landingPageSinger from "../Images/landingPageSinger.jpg";
+import landingPageMusicSign from "../Images/landingPageMusicSign.png";
+import landingPageGuitar from "../Images/landingPageGuitar.png";
 
 export default function Home() {
     return (
         <div className="bg-white min-h-screen w-full overflow-x-hidden">
-
-            <Navbar />
-
             <Image
                 src={landingPageTopSection}
                 alt="Hero"

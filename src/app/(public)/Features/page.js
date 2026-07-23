@@ -1,12 +1,11 @@
 import React from "react";
-import Navbar from "../Components/Navbar";
-import featuresPageHeroSection from "../Images/featuresPageHeroSection.png";
+import Navbar from "../../Components/Navbar";
+import featuresPageHeroSection from "../../Images/featuresPageHeroSection.png";
 import Image from "next/image";
 
 function Features() {
     return (
         <div className="bg-white min-h-screen w-full overflow-x-hidden">
-            <Navbar />
             <Image alt = "featuresPageHeroSection" src = {featuresPageHeroSection}
             className="w-full" />
             <div className="font-bold text-[25px] mt-5 md:text-[40px] lg:text-[50px]

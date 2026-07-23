@@ -177,7 +177,6 @@ model song_review {
   user_id     Int
   review_text String
   rating      Int
-  review_type String
   song_id     Int
   created_at  DateTime @default(now())
 }

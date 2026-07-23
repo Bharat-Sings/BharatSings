@@ -1,14 +1,13 @@
 import React from "react";
-import Navbar from "../Components/Navbar";
+import Navbar from "../../Components/Navbar";
 import Image from "next/image";
-import aboutPageGuitarPerson from "../Images/aboutPageGuitarPerson.png";
-import aboutPageFlutePerson from "../Images/aboutPageFlutePerson.png";
-import aboutPagePiano from "../Images/aboutPagePiano.png";
+import aboutPageGuitarPerson from "../../Images/aboutPageGuitarPerson.png";
+import aboutPageFlutePerson from "../../Images/aboutPageFlutePerson.png";
+import aboutPagePiano from "../../Images/aboutPagePiano.png";
 
 function About() {
     return (
         <div className="bg-white min-h-screen w-full overflow-x-hidden">
-            <Navbar />
             <div className = "flex">
                 <div className="">
                     <div className = "md:ml-40 md:mt-20 ml-5 font-bold text-[15px] md:text-2xl lg:text-3xl font-[Verdana]">
