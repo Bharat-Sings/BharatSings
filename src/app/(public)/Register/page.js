@@ -130,7 +130,7 @@ function Register() {
         {/* --- FOOTER REDIRECT --- */}
         <p className="mt-8 text-xs text-gray-500">
           Already have an account?{" "}
-          <a href="/login" className="text-[#6366F1] hover:underline font-medium ml-1">
+          <a href="/Login" className="text-[#6366F1] hover:underline font-medium ml-1">
             Login
           </a>
         </p>
