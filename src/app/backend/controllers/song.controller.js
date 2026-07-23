@@ -60,7 +60,7 @@ const findSongs = asyncHandler(async (req, res) => {
 });
 
 const findSongsByGenre = asyncHandler(async (req, res) => {
-    let { genre } = req.body;
+    let { genre } = req.query;
 
     if (!genre || genre?.trim() === "") {
         throw new ApiError(401, "Genre empty or undefined");
@@ -88,7 +88,7 @@ const findSongsByGenre = asyncHandler(async (req, res) => {
 });
 
 const findSongsByTitle = asyncHandler(async (req, res) => {
-    let { title } = req.body;
+    let { title } = req.query;
 
     if (!title || title?.trim() === "") {
         throw new ApiError(401, "Title empty or undefined");
