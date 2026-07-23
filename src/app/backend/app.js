@@ -8,6 +8,7 @@ import { userRouter } from "./routers/user.router.js";
 import { songRouter } from "./routers/song.router.js";
 import { courseRouter } from "./routers/course.router.js";
 import { enrollmentRouter } from "./routers/enrollment.router.js";
+import { trainerRouter } from "./routers/trainer.router.js";
 
 const app = express();
 app.use(express.json());
@@ -22,6 +23,7 @@ app.use("/api/v1/users", userRouter);
 app.use("/api/v1/songs", songRouter);
 app.use("/api/v1/courses", courseRouter);
 app.use("/api/v1/enrollments", enrollmentRouter);
+app.use("/api/v1/trainers", trainerRouter);
 
 const PORT = process.env.PORT || 3000;
 
