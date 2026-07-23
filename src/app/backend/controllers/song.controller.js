@@ -67,7 +67,9 @@ const findSongsByGenre = asyncHandler(async (req, res) => {
     }
 
     const songs = await prisma.song.findMany({
-        genre: genre
+        where: {
+            genre: genre
+        }
     });
 
     if (!songs) {
@@ -95,7 +97,9 @@ const findSongsByTitle = asyncHandler(async (req, res) => {
     }
 
     const songs = await prisma.song.findMany({
-        title: title
+        where: {
+            title: title
+        }
     });
 
     if (!songs) {
