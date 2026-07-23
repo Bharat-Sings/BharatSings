@@ -207,7 +207,8 @@ model Trainer {
   id              Int              @id @default(autoincrement())
   name            String
   description     String
-  is_active       Boolean
+  category        String
+  is_active       Boolean          @default(true)
   live_sessions   live_session[]
   courses         course[]
   course_reviews  course_review[]
