@@ -44,6 +44,28 @@ const createCourseReview = asyncHandler(async(req, res) => {
 
 const findCourseReviewsByCourseId = asyncHandler(async(req, res) => {
     let { courseId } = req.body;
+
+    if (!courseId) {
+        throw new ApiError(400, "Course Id Undefined");
+    }
+
+    const courseReviews = await prisma.course_review.findMany({
+        where: {
+            course_id: courseId
+        }
+    });
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                courseReviews: courseReviews
+            },
+            "Successfully found course reviews"
+        )
+    );
 });
 
 export {
