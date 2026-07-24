@@ -22,7 +22,7 @@ app.use(express.urlencoded({extended: true}));
 app.use(cookieParser());
 app.use(express.static('public'));
 app.use(cors({
-    origin: process.env.FRONTEND_URI || "https://localhost:5000",
+    origin: process.env.FRONTEND_URI || "http://localhost:3000",
     credentials: true
 }));
 app.use("/api/v1/users", userRouter);
@@ -37,7 +37,7 @@ app.use("/api/v1/likes", likeRouter);
 app.use("/api/v1/coursereviews", courseReviewRouter);
 app.use("/api/v1/structuredreviews", structuredReviewRouter);
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
     console.log(`Server is listening at PORT ${PORT}....`);

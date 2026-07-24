@@ -3,6 +3,8 @@
 import React from "react";
 // Added custom interface icons to fit the new fields perfectly
 import { UserPlus, Mail, Lock, Smile, Calendar, Users, Globe, FileText } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/app/context/AuthContext";
 
 function Register() {
   // Individual field states matching the requested parameters
@@ -14,19 +16,44 @@ function Register() {
   const [country, setCountry] = React.useState("");
   const [bio, setBio] = React.useState("");
 
-  const handleSubmit = (e) => {
+  const router = useRouter();
+  const { login } = useAuth();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Payload matches your requested parameter keys
-    const registrationPayload = {
-      email,
-      password,
-      display_name: displayName,
-      date_of_birth: dateOfBirth,
-      gender,
-      country,
-      bio,
-    };
-    console.log("Form submitted with:", registrationPayload);
+
+    try {
+      const response = await fetch("http://localhost:5000/api/v1/users/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          email,
+          password,
+          display_name: displayName,
+          date_of_birth: dateOfBirth,
+          gender,
+          country,
+          bio,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.message);
+        return;
+      }
+
+      login(data.user, data.accessToken);
+
+      router.push("/dashboard");
+      //alert("Registration Successful");
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (

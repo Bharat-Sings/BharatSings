@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import DashboardNavbar from "../Components/DashboardNavbar";
+import { AuthProvider } from "../context/AuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,26 +26,25 @@ export default function RootLayout({ children }) {
     >
       {/* 
         Mobile: flex-col (stacked vertically)
-        Desktop (md): flex-row (side-by-side layout) 
+        Desktop (md): flex-row (side-by-side layout)
       */}
       <body className="flex flex-col md:flex-row h-screen w-screen overflow-hidden bg-white">
-        
-        {/* Sidebar navigation component */}
-        <DashboardNavbar />
-        
-        {/* 
-          Main content window:
-          Takes full width on mobile, fills remaining horizontal space on desktop.
-          Independent vertical scrollbar prevents layout breakages.
-        */}
-        <main className="flex-1 w-full h-full overflow-y-auto p-4 sm:p-6 md:p-10">
-          <div className="max-w-4xl mx-auto w-full space-y-6">
-            {children}
-          </div>
-        </main>
+        <AuthProvider>
+          {/* Sidebar navigation component */}
+          <DashboardNavbar />
 
+          {/* 
+            Main content window:
+            Takes full width on mobile, fills remaining horizontal space on desktop.
+            Independent vertical scrollbar prevents layout breakages.
+          */}
+          <main className="flex-1 w-full h-full overflow-y-auto p-4 sm:p-6 md:p-10">
+            <div className="max-w-4xl mx-auto w-full space-y-6">
+              {children}
+            </div>
+          </main>
+        </AuthProvider>
       </body>
     </html>
   );
 }
-

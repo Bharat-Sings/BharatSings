@@ -15,7 +15,7 @@ const refreshTokenCookieOptions = {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    path: "/api/auth/refresh",
+    path: "/",
     maxAge: ms(process.env.REFRESH_TOKEN_EXPIRY || "10d"),
 };
 
@@ -241,7 +241,10 @@ export const refreshToken = async (req, res, next) => {
 export const logout = async (req, res) => {
 
     res.clearCookie("refreshToken", {
-        path: "/api/auth/refresh",
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        path: "/",
     });
 
     res.json({

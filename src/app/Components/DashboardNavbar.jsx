@@ -1,20 +1,21 @@
 "use client"
 
 import React, { useState } from "react";
-import Image from "next/image";
+import { usePathname } from "next/navigation";import Image from "next/image";
 import logo from "../Images/logo.jpg";
 // Optional: Install 'lucide-react' for clean iconography, or swap with your own SVGs
 import { LayoutDashboard, Music, GraduationCap, Store, Users, Menu, X } from "lucide-react";
 
 function DashboardNavbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
 
   const menuItems = [
-    { name: "Dashboard", icon: <LayoutDashboard size={20} /> },
-    { name: "Songs", icon: <Music size={20} /> },
-    { name: "Courses", icon: <GraduationCap size={20} /> },
-    { name: "Marketplace", icon: <Store size={20} /> },
-    { name: "Collaboration", icon: <Users size={20} /> },
+    { name: "Dashboard", icon: <LayoutDashboard size={20} />, link: "/dashboard" },
+    { name: "Songs", icon: <Music size={20} />, link: "/dashboard/Songs" },
+    { name: "Courses", icon: <GraduationCap size={20} />, link: "/dashboard/Courses" },
+    { name: "Marketplace", icon: <Store size={20} />, link: "/dashboard/Marketplace" },
+    { name: "Collaboration", icon: <Users size={20} />, link: "/dashboard/Collaboration" },
   ];
 
   return (
@@ -52,12 +53,11 @@ function DashboardNavbar() {
           <ul className="flex flex-col gap-1 w-full">
             {menuItems.map((item, index) => {
               // Simulating active state styling for 'Dashboard' as shown in the screenshot
-              const isActive = item.name === "Dashboard";
-              
+              const isActive = pathname === item.link;              
               return (
                 <li key={index}>
                   <a
-                    href={`#${item.name.toLowerCase()}`}
+                    href={`${item.link}`}
                     onClick={() => setIsOpen(false)} // Close sidebar on mobile item click
                     className={`
                       flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-sm transition-all duration-200
