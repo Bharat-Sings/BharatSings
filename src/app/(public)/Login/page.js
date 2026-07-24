@@ -108,7 +108,7 @@ function Login() {
         {/* --- FOOTER REDIRECT --- */}
         <p className="mt-8 text-xs text-gray-500">
           Don't have an account?{" "}
-          <a href="/register" className="text-[#6366F1] hover:underline font-medium ml-1">
+          <a href="/Register" className="text-[#6366F1] hover:underline font-medium ml-1">
             Register
           </a>
         </p>

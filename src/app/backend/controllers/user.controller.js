@@ -2,6 +2,7 @@ import prisma from "../lib/prisma.js";
 import jwt from "jsonwebtoken";
 import ms from "ms";
 import { validationResult } from "express-validator";
+import { ApiResponse } from "../utils/ApiResponse.js";
 
 import {
     hashPassword,
@@ -247,4 +248,17 @@ export const logout = async (req, res) => {
         message: "Logged out successfully",
     });
 
+};
+
+//GET CURRENT USER
+export const getCurrentUser = async (req, res) => {
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            {
+                user: req.user
+            },
+            "Current user fetched successfully"
+        )
+    );
 };

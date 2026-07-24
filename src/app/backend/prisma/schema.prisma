@@ -33,32 +33,37 @@ model User {
 }
 
 model Song {
-  id                  Int             @id @default(autoincrement())
-  title               String
-  description         String
-  release_date        DateTime
-  duration            Int
-  album_id            Int
-  album               album           @relation(fields: [album_id], references: [id])
-  genre_id            Int
-  genre               genre           @relation(fields: [genre_id], references: [id])
-  uploader_id         Int
-  uploader            User            @relation(fields: [uploader_id], references: [id])
-  lyrics_id           Int
-  lyrics              lyrics          @relation(fields: [lyrics_id], references: [id])
-  audio_file_id       Int
-  audio_file          audio_file      @relation(fields: [audio_file_id], references: [id])
-  created_at          DateTime        @default(now())
-  updated_at          DateTime        @updatedAt
-  is_published        Boolean
-  price               Float
-  is_marketplace_item Boolean
-  likes               like[]
-  playlist_songs      playlist_song[]
+  id             Int             @id @default(autoincrement())
+  title          String
+  description    String
+  release_date   DateTime        @default(now())
+  //duration            Int             
+  //album_id            Int
+  //album               album           @relation(fields: [album_id], references: [id])
+  genre_id       Int
+  genre          genre           @relation(fields: [genre_id], references: [id])
+  //lyrics_id           Int
+  //lyrics              lyrics          @relation(fields: [lyrics_id], references: [id])
+  audio_file_id  Int
+  audio_file     audio_file      @relation(fields: [audio_file_id], references: [id])
+  created_at     DateTime        @default(now())
+  updated_at     DateTime        @updatedAt
+  //is_published        Boolean
+  price          Float?
+  //is_marketplace_item Boolean
+  likes          like[]
+  playlist_songs playlist_song[]
+  user           User?           @relation(fields: [userId], references: [id])
+  userId         Int?
+  album          album?          @relation(fields: [albumId], references: [id])
+  albumId        Int?
+  lyrics         lyrics?         @relation(fields: [lyricsId], references: [id])
+  lyricsId       Int?
 }
 
 model audio_file {
   id    Int    @id @default(autoincrement())
+  url   String @unique
   songs Song[]
 }
 
@@ -78,7 +83,7 @@ model album {
 model genre {
   id          Int     @id @default(autoincrement())
   name        String  @unique
-  description String
+  description String?
   albums      album[]
   songs       Song[]
 }
@@ -115,16 +120,16 @@ model course {
   title          String
   description    String
   category       String
-  level          String
+  //level          String
   language_id    Int
   language       language        @relation(fields: [language_id], references: [id])
   trainer_id     Int
   trainer        Trainer         @relation(fields: [trainer_id], references: [id])
   price          Float
-  is_published   Boolean
+  //is_published   Boolean
   created_at     DateTime        @default(now())
   updated_at     DateTime        @updatedAt
-  certificate_id Int
+  //certificate_id Int
   course_reviews course_review[]
   enrollments    enrollment[]
   live_sessions  live_session[]

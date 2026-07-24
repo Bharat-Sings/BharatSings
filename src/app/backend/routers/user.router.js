@@ -5,6 +5,7 @@ import {
     login,
     refreshToken,
     logout,
+    getCurrentUser
 
 } from "../controllers/user.controller.js";
 
@@ -15,6 +16,7 @@ import {
 
 } from "../validators/auth.validator.js";
 
+import authMiddleware from "../middlewares/auth.middleware.js";
 
 
 const router = Router();
@@ -40,4 +42,11 @@ router.post(
     "/logout",
     logout
 );
+
+router.get(
+    "/me",
+    authMiddleware,
+    getCurrentUser
+)
+
 export { router as userRouter }

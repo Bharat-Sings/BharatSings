@@ -1,24 +1,36 @@
 "use client";
 
 import React from "react";
-// Using lucide-react for clean, modern interface icons
-import { User, Mail, Lock, UserPlus } from "lucide-react";
+// Added custom interface icons to fit the new fields perfectly
+import { UserPlus, Mail, Lock, Smile, Calendar, Users, Globe, FileText } from "lucide-react";
 
 function Register() {
-  // Individual field states as requested
-  const [fullName, setFullName] = React.useState("");
+  // Individual field states matching the requested parameters
   const [email, setEmail] = React.useState("");
   const [password, setPassword] = React.useState("");
-  const [confirmPassword, setConfirmPassword] = React.useState("");
+  const [displayName, setDisplayName] = React.useState("");
+  const [dateOfBirth, setDateOfBirth] = React.useState("");
+  const [gender, setGender] = React.useState("");
+  const [country, setCountry] = React.useState("");
+  const [bio, setBio] = React.useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle form submission logic here using individual values
-    console.log("Form submitted with:", { fullName, email, password, confirmPassword });
+    // Payload matches your requested parameter keys
+    const registrationPayload = {
+      email,
+      password,
+      display_name: displayName,
+      date_of_birth: dateOfBirth,
+      gender,
+      country,
+      bio,
+    };
+    console.log("Form submitted with:", registrationPayload);
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#F8F9FA] p-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#F8F9FA] p-4 my-8">
       {/* --- CARD CONTAINER --- */}
       <div className="w-full max-w-md rounded-[24px] bg-[#13131A] p-8 shadow-2xl text-center">
         
@@ -38,20 +50,20 @@ function Register() {
         {/* --- REGISTRATION FORM --- */}
         <form onSubmit={handleSubmit} className="mt-8 space-y-4">
           
-          {/* 1. FULL NAME INPUT */}
+          {/* 1. DISPLAY NAME INPUT */}
           <div className="relative rounded-xl bg-[#1C1C24] border border-gray-800 focus-within:border-[#7F56D9] transition-all p-3 text-left">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-              <User size={18} />
+              <Smile size={18} />
             </span>
             <div className="pl-8 flex flex-col">
               <label className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
-                Full Name
+                Display Name
               </label>
               <input
                 type="text"
-                value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
-                placeholder="Enter your full name"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Enter your display name"
                 className="w-full bg-transparent text-sm text-white placeholder-gray-600 focus:outline-none mt-0.5"
                 required
               />
@@ -98,22 +110,85 @@ function Register() {
             </div>
           </div>
 
-          {/* 4. CONFIRM PASSWORD INPUT */}
+          {/* 4. DATE OF BIRTH INPUT */}
           <div className="relative rounded-xl bg-[#1C1C24] border border-gray-800 focus-within:border-[#7F56D9] transition-all p-3 text-left">
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
-              <Lock size={18} />
+              <Calendar size={18} />
             </span>
             <div className="pl-8 flex flex-col">
               <label className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
-                Confirm Password
+                Date of Birth
               </label>
               <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm your password"
+                type="date"
+                value={dateOfBirth}
+                onChange={(e) => setDateOfBirth(e.target.value)}
+                className="w-full bg-transparent text-sm text-white focus:outline-none mt-0.5 [color-scheme:dark]"
+                required
+              />
+            </div>
+          </div>
+
+          {/* 5. GENDER SELECT DROP-DOWN */}
+          <div className="relative rounded-xl bg-[#1C1C24] border border-gray-800 focus-within:border-[#7F56D9] transition-all p-3 text-left">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+              <Users size={18} />
+            </span>
+            <div className="pl-8 flex flex-col">
+              <label className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+                Gender
+              </label>
+              <select
+                value={gender}
+                onChange={(e) => setGender(e.target.value)}
+                className="w-full bg-transparent text-sm text-white focus:outline-none mt-0.5 cursor-pointer appearance-none"
+                required
+              >
+                <option value="" disabled className="bg-[#1C1C24]">Select gender</option>
+                <option value="male" className="bg-[#1C1C24]">Male</option>
+                <option value="female" className="bg-[#1C1C24]">Female</option>
+                <option value="other" className="bg-[#1C1C24]">Other</option>
+                <option value="prefer_not_to_say" className="bg-[#1C1C24]">Prefer not to say</option>
+              </select>
+            </div>
+          </div>
+
+          {/* 6. COUNTRY INPUT */}
+          <div className="relative rounded-xl bg-[#1C1C24] border border-gray-800 focus-within:border-[#7F56D9] transition-all p-3 text-left">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">
+              <Globe size={18} />
+            </span>
+            <div className="pl-8 flex flex-col">
+              <label className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+                Country
+              </label>
+              <input
+                type="text"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                placeholder="e.g. India"
                 className="w-full bg-transparent text-sm text-white placeholder-gray-600 focus:outline-none mt-0.5"
                 required
+              />
+            </div>
+          </div>
+
+          {/* 7. BIO TEXTAREA INPUT */}
+          <div className="relative rounded-xl bg-[#1C1C24] border border-gray-800 focus-within:border-[#7F56D9] transition-all p-3 text-left">
+            <span className="absolute left-4 top-6 text-gray-500">
+              <FileText size={18} />
+            </span>
+            <div className="pl-8 flex flex-col">
+              <label className="text-[10px] font-medium text-gray-400 uppercase tracking-wider">
+                Bio
+              </label>
+              <textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                placeholder="Tell us about your musical journey..."
+                rows={3}
+                className="w-full bg-transparent text-sm text-white placeholder-gray-600 focus:outline-none mt-1 resize-none min-h-[60px]"
+                maxLength={250}
               />
             </div>
           </div>

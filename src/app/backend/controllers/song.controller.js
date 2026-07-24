@@ -1,15 +1,18 @@
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
-import { ApiResponse } from "../utils/ApiResponse";
+import { ApiResponse } from "../utils/ApiResponse.js";
 import { PrismaClient } from "@prisma/client";
+import { connect } from "mongoose";
 
 const prisma = new PrismaClient();
 
 const createSong = asyncHandler(async (req, res) => {
-    let { title, description, genre } = req.body;
+    let { title, description, genreId, audioFileId } = req.body;
 
     if (
-        [title, description, genre].some((field) => !field || field?.trim() === "")
+        [title, description].some((field) => !field || field?.trim() === "")
+        ||
+        [audioFileId, genreId].some((field) => !field)
     ) {
         throw new ApiError(401, "All fields are required");
     }
@@ -18,7 +21,16 @@ const createSong = asyncHandler(async (req, res) => {
         data: {
             title,
             description,
-            genre
+            genre: {
+                connect: {
+                    id: parseInt(genreId, 10)
+                }
+            },
+            audio_file: {
+                connect: {
+                    id: parseInt(audioFileId, 10)
+                }
+            }
         }
     });
 
@@ -59,16 +71,16 @@ const findSongs = asyncHandler(async (req, res) => {
     );
 });
 
-const findSongsByGenre = asyncHandler(async (req, res) => {
-    let { genre } = req.query;
+const findSongsByGenreId = asyncHandler(async (req, res) => {
+    let { genreId } = req.query;
 
-    if (!genre || genre?.trim() === "") {
+    if (!genreId) {
         throw new ApiError(401, "Genre empty or undefined");
     }
 
     const songs = await prisma.song.findMany({
         where: {
-            genre: genre
+            genre_id: parseInt(genreId)
         }
     });
 
@@ -122,6 +134,6 @@ const findSongsByTitle = asyncHandler(async (req, res) => {
 export {
     createSong,
     findSongs,
-    findSongsByGenre,
+    findSongsByGenreId,
     findSongsByTitle
 }

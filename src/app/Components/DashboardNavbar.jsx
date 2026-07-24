@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import React, { useState } from "react";
 import Image from "next/image";
@@ -41,16 +41,10 @@ function DashboardNavbar() {
         `}
       >
         {/* Sidebar Logo (hidden on mobile header layout) */}
-        <div className="hidden md:block mb-8 px-4 pt-2">
-            <div className="w-48 h-14 relative"> {/* Increased width from w-36 to w-48 and height to h-14 */}
-                <Image 
-                alt="logo" 
-                src={logo} 
-                fill 
-                className="object-contain object-left" /* Aligns the logo neatly to the left edge */
-                priority 
-                />
-            </div>
+        <div className="hidden md:block mb-8 px-2">
+          <div className="w-36 relative h-10">
+            <Image alt="logo" src={logo} fill className="object-contain" priority />
+          </div>
         </div>
 
         {/* Navigation Menu Links */}
