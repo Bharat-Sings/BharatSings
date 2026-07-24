@@ -11,6 +11,9 @@ import { enrollmentRouter } from "./routers/enrollment.router.js";
 import { trainerRouter } from "./routers/trainer.router.js";
 import { songReviewRouter } from "./routers/songreview.router.js";
 import { audioFileRouter } from "./routers/audiofile.router.js";
+import { albumRouter } from "./routers/album.router.js";
+import { likeRouter } from "./routers/like.router.js";
+import { courseReviewRouter } from "./routers/coursereview.router.js";
 
 const app = express();
 app.use(express.json());
@@ -28,6 +31,9 @@ app.use("/api/v1/enrollments", enrollmentRouter);
 app.use("/api/v1/trainers", trainerRouter);
 app.use("/api/v1/songreviews", songReviewRouter);
 app.use("/api/v1/audiofiles", audioFileRouter);
+app.use("/api/v1/albums", albumRouter);
+app.use("/api/v1/likes", likeRouter);
+app.use("/api/v1/coursereviews", courseReviewRouter);
 
 const PORT = process.env.PORT || 3000;
 

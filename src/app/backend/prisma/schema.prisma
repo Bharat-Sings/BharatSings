@@ -68,15 +68,15 @@ model audio_file {
 }
 
 model album {
-  id           Int      @id @default(autoincrement())
+  id           Int       @id @default(autoincrement())
   title        String
   description  String
-  release_date DateTime
-  cover_image  String
+  release_date DateTime?
+  cover_image  String?
   artist_id    Int
-  genre_id     Int
-  genre        genre    @relation(fields: [genre_id], references: [id])
-  created_at   DateTime @default(now())
+  genre_id     Int?
+  genre        genre?    @relation(fields: [genre_id], references: [id])
+  created_at   DateTime  @default(now())
   songs        Song[]
 }
 
@@ -193,8 +193,8 @@ model course_review {
   rating      Int
   course_id   Int
   course      course   @relation(fields: [course_id], references: [id])
-  trainer_id  Int
-  trainer     Trainer  @relation(fields: [trainer_id], references: [id])
+  trainer_id  Int?
+  trainer     Trainer?  @relation(fields: [trainer_id], references: [id])
   created_at  DateTime @default(now())
 }
 
@@ -282,10 +282,10 @@ model like {
   id         Int      @id @default(autoincrement())
   user_id    Int
   user       User     @relation(fields: [user_id], references: [id])
-  song_id    Int
-  song       Song     @relation(fields: [song_id], references: [id])
-  comment_id Int
-  comment    comment  @relation(fields: [comment_id], references: [id])
+  song_id    Int?
+  song       Song?    @relation(fields: [song_id], references: [id])
+  comment_id Int?
+  comment    comment? @relation(fields: [comment_id], references: [id])
   created_at DateTime @default(now())
 }
 
