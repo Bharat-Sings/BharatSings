@@ -53,12 +53,13 @@ model Song {
   //is_marketplace_item Boolean
   likes          like[]
   playlist_songs playlist_song[]
-  user           User?           @relation(fields: [userId], references: [id])
-  userId         Int?
+  user           User            @relation(fields: [userId], references: [id])
+  userId         Int
   album          album?          @relation(fields: [albumId], references: [id])
   albumId        Int?
   lyrics         lyrics?         @relation(fields: [lyricsId], references: [id])
   lyricsId       Int?
+  forSale        Boolean
 }
 
 model audio_file {
@@ -194,7 +195,7 @@ model course_review {
   course_id   Int
   course      course   @relation(fields: [course_id], references: [id])
   trainer_id  Int?
-  trainer     Trainer?  @relation(fields: [trainer_id], references: [id])
+  trainer     Trainer? @relation(fields: [trainer_id], references: [id])
   created_at  DateTime @default(now())
 }
 

@@ -3,6 +3,8 @@
 import React from "react";
 // Using lucide-react for UI icons
 import { Mail, Lock, LogIn } from "lucide-react";
+import { useAuth } from "@/app/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 function Login() {
   // Individual field states for the login page
@@ -10,10 +12,38 @@ function Login() {
   const [password, setPassword] = React.useState("");
   const [rememberMe, setRememberMe] = React.useState(false);
 
-  const handleSubmit = (e) => {
+  const router = useRouter();
+
+  const { login } = useAuth();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     // Handle login verification logic here
-    console.log("Login submitted with:", { email, password, rememberMe });
+    try {
+      const response = await fetch("http://localhost:5000/api/v1/users/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          email,
+          password
+        }),
+      });
+
+      if (!response.ok) {
+        alert(data.message);
+        return;
+      }
+
+      const data = await response.json();
+
+      login(data.user, data.accessToken);
+      router.push("/dashboard");
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   return (

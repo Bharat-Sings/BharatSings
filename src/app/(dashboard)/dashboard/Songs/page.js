@@ -1,57 +1,229 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import axios from "axios";
 
 /* Shared design system with Marketplace.jsx
    bg #121319 · panel #1B1D26 · panel-2 #15161D · border #272A35
    accent #E3A542 (amber) · live #4FD1C5 (teal, reserved for ratings/status) */
 
-const TRACKS = [
-  { id: 1, title: "The of the Yaong", artist: "Artist Sing", genre: "Ambient", mood: "Frowom", img: "https://images.unsplash.com/photo-1506157786151-b8491531f063" },
-  { id: 2, title: "Bawkanna", artist: "Komam Sorvena", genre: "Synthwave", mood: "Mood", img: "https://images.unsplash.com/photo-1511379938547-c1f69419868d" },
-  { id: 3, title: "Death Mona", artist: "Resior", genre: "Downtempo", mood: "Rhythm", img: "https://images.unsplash.com/photo-1524368535928-5b5e00ddc76b" },
-  { id: 4, title: "Niasaria", artist: "Jaati Absara", genre: "Lofi", mood: "Mood", img: "https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f" },
-  { id: 5, title: "The Monn Kindr...", artist: "Artist Sing", genre: "Ambient", mood: "Emotion", img: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819" },
-];
+const API_BASE = "http://localhost:5000";
 
-const LEADERS = [
-  { id: 1, name: "Ahmom Singer", type: "Singer", tag: "Singer/Musicians", rating: 4.0, img: "https://images.unsplash.com/photo-1534528741775-53994a69daeb", activeBtn: "Hire" },
-  { id: 2, name: "Deltall Musician", type: "Musician", tag: "Singer/Musicians", rating: 4.0, img: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e", activeBtn: "Hire" },
-  { id: 3, name: "Dhama Sunaker", type: "Singer", tag: "Band", rating: 4.5, img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2", activeBtn: "Collaborate" },
-  { id: 4, name: "Sharar Shara", type: "Singer", tag: "Composers", rating: 4.0, img: "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df", activeBtn: "Collaborate" },
-];
+// Same mapping used on the upload page.
+const genreWithId = {
+  1: "Classical",
+  2: "Pop",
+  3: "Folk",
+  4: "Instrumental",
+  5: "Fusion",
+};
+
+// Single shared placeholder used for every song (no per-song artwork
+// exists in the schema). Swap this for a real <img src="..."> if you
+// have a hosted cover image you'd like to use instead.
+function MusicImage({ className }) {
+  return (
+    <div className={`${className} bg-[#15161D] flex items-center justify-center`}>
+      <svg viewBox="0 0 24 24" className="w-1/3 h-1/3 text-[#5B5F6E]" fill="none">
+        <path d="M9 18V5l12-2v13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+        <circle cx="6" cy="18" r="3" stroke="currentColor" strokeWidth="1.5" />
+        <circle cx="18" cy="16" r="3" stroke="currentColor" strokeWidth="1.5" />
+      </svg>
+    </div>
+  );
+}
 
 const CHIPS = ["All", "Singer/Musicians", "Band", "Composers"];
 
 const BAR_HEIGHTS = [40, 70, 50, 90, 60, 75, 45, 80, 55, 30, 65, 85, 40, 95, 70, 50, 80, 60, 40, 75, 50, 90, 65, 40, 30, 55, 70, 45, 80];
 
+function formatTime(seconds) {
+  if (!isFinite(seconds) || seconds < 0) return "00:00";
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
 export default function SongsPage() {
+  // No fake persons — leaderboard stays empty until you wire it to a real endpoint.
+  const LEADERS = [];
+
+  const [tracks, setTracks] = useState([]);
+  const [loadingTracks, setLoadingTracks] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
+
   const [query, setQuery] = useState("");
   const [chip, setChip] = useState("All");
-  const [currentTrack, setCurrentTrack] = useState(TRACKS[0]);
+  const [currentTrack, setCurrentTrack] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [shuffle, setShuffle] = useState(false);
+  const [loop, setLoop] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [playbackError, setPlaybackError] = useState(null);
+
+  const audioRef = useRef(null);
+
+  // Fetch real songs, then resolve each song's audio URL via its audioFileId
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSongs() {
+      setLoadingTracks(true);
+      setFetchError(null);
+      try {
+        const res = await axios.get(`${API_BASE}/api/v1/songs/findSongs`);
+        const songs = res.data?.data?.songs || [];
+
+        const withAudio = await Promise.all(
+          songs.map(async (song) => {
+            try {
+              const audioRes = await axios.get(
+                `${API_BASE}/api/v1/audiofiles/findAudioFileById`,
+                { params: { audioFileId: song.audio_file_id } }
+              );
+              const url = audioRes.data?.data?.audioFile?.url || null;
+
+              return {
+                id: song.id,
+                title: song.title,
+                genre: genreWithId[song.genreId] || "Unknown",
+                url,
+              };
+            } catch (err) {
+              console.log(err);
+              return null;
+            }
+          })
+        );
+
+        const validTracks = withAudio.filter((t) => t && t.url);
+
+        if (!cancelled) {
+          setTracks(validTracks);
+          if (validTracks.length > 0) setCurrentTrack(validTracks[0]);
+        }
+      } catch (err) {
+        console.log(err);
+        if (!cancelled) setFetchError(err.message || "Could not load songs.");
+      } finally {
+        if (!cancelled) setLoadingTracks(false);
+      }
+    }
+
+    loadSongs();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filteredTracks = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return TRACKS;
-    return TRACKS.filter(
-      (t) => t.title.toLowerCase().includes(q) || t.artist.toLowerCase().includes(q)
-    );
-  }, [query]);
+    if (!q) return tracks;
+    return tracks.filter((t) => t.title.toLowerCase().includes(q));
+  }, [query, tracks]);
 
   const filteredLeaders = useMemo(() => {
     if (chip === "All") return LEADERS;
     return LEADERS.filter((l) => l.tag === chip);
   }, [chip]);
 
-  function handleListen(track) {
-    if (currentTrack.id === track.id) {
-      setIsPlaying((p) => !p);
-    } else {
-      setCurrentTrack(track);
-      setIsPlaying(true);
+  // Load new src whenever the current track changes
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !currentTrack) return;
+
+    setPlaybackError(null);
+    setCurrentTime(0);
+    setDuration(0);
+    audio.src = currentTrack.url;
+    audio.load();
+
+    if (isPlaying) {
+      audio.play().catch((err) => {
+        console.log(err);
+        setPlaybackError("Couldn't play this track.");
+        setIsPlaying(false);
+      });
     }
-  }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentTrack]);
+
+  // Play / pause in response to isPlaying
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio || !currentTrack) return;
+
+    if (isPlaying) {
+      audio.play().catch((err) => {
+        console.log(err);
+        setPlaybackError("Couldn't play this track.");
+        setIsPlaying(false);
+      });
+    } else {
+      audio.pause();
+    }
+  }, [isPlaying, currentTrack]);
+
+  // Keep loop mode in sync
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (audio) audio.loop = loop;
+  }, [loop]);
+
+  const goToTrack = useCallback((track, autoplay = true) => {
+    setCurrentTrack(track);
+    setIsPlaying(autoplay);
+  }, []);
+
+  const handleListen = useCallback(
+    (track) => {
+      if (currentTrack && currentTrack.id === track.id) {
+        setIsPlaying((p) => !p);
+      } else {
+        goToTrack(track, true);
+      }
+    },
+    [currentTrack, goToTrack]
+  );
+
+  const togglePlay = useCallback(() => {
+    if (!currentTrack) return;
+    setIsPlaying((p) => !p);
+  }, [currentTrack]);
+
+  const playAdjacent = useCallback(
+    (direction) => {
+      if (filteredTracks.length === 0 || !currentTrack) return;
+
+      if (shuffle) {
+        const others = filteredTracks.filter((t) => t.id !== currentTrack.id);
+        const next = others.length
+          ? others[Math.floor(Math.random() * others.length)]
+          : currentTrack;
+        goToTrack(next, true);
+        return;
+      }
+
+      const idx = filteredTracks.findIndex((t) => t.id === currentTrack.id);
+      const nextIdx =
+        idx === -1
+          ? 0
+          : (idx + direction + filteredTracks.length) % filteredTracks.length;
+      goToTrack(filteredTracks[nextIdx], true);
+    },
+    [filteredTracks, currentTrack, shuffle, goToTrack]
+  );
+
+  const handleVolumeChange = useCallback((e) => {
+    const audio = audioRef.current;
+    if (audio) audio.volume = Number(e.target.value) / 100;
+  }, []);
+
+  const progress = duration > 0 ? currentTime / duration : 0;
+  const activeBars = Math.round(progress * BAR_HEIGHTS.length);
+
+  const staffPicks = tracks.slice(0, 3);
 
   return (
     <div className="w-full min-h-screen bg-[#121319] text-[#F2F1ED] pb-40 md:pb-28" style={{ fontFamily: "'Inter', ui-sans-serif, system-ui" }}>
@@ -59,7 +231,7 @@ export default function SongsPage() {
         @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
         .font-display { font-family: 'Space Grotesk', ui-sans-serif, system-ui; }
         .font-mono { font-family: 'JetBrains Mono', ui-monospace, monospace; }
-        .bar-anim { animation: barPulse 1.1s ease-in-out infinite; }
+        .bar-anim { animation: barPulse 1.1s ease-in-out infinite; will-change: transform; }
         @keyframes barPulse {
           0%, 100% { transform: scaleY(0.55); }
           50% { transform: scaleY(1); }
@@ -71,6 +243,20 @@ export default function SongsPage() {
         .focus-ring:focus-visible { outline: 2px solid #E3A542; outline-offset: 2px; }
       `}</style>
 
+      {/* Hidden audio element driving real playback */}
+      <audio
+        ref={audioRef}
+        onTimeUpdate={(e) => setCurrentTime(e.currentTarget.currentTime)}
+        onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+        onEnded={() => {
+          if (!loop) playAdjacent(1);
+        }}
+        onError={() => {
+          setPlaybackError("Couldn't load this track's audio.");
+          setIsPlaying(false);
+        }}
+      />
+
       <div className="max-w-[1400px] mx-auto p-5 sm:p-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
           {/* Main content */}
@@ -79,82 +265,88 @@ export default function SongsPage() {
               Songs
             </h1>
 
-            {/* Staff picks */}
-            <div className="bg-[#1B1D26] rounded-2xl p-5 sm:p-6 border border-[#272A35] flex flex-col md:flex-row gap-5 items-center">
-              <div className="flex gap-3 shrink-0">
-                {TRACKS.slice(0, 3).map((t) => (
-                  <img
-                    key={t.id}
-                    src={t.img}
-                    alt={t.title}
-                    className="w-16 h-16 sm:w-24 sm:h-24 rounded-lg object-cover"
-                  />
-                ))}
+            {fetchError && (
+              <div className="bg-[#1B1D26] rounded-xl p-4 border border-[#272A35] text-sm text-[#8B8FA0]">
+                {fetchError} — check that your backend is running at {API_BASE}.
               </div>
+            )}
 
-              <div className="flex-1 min-w-0">
-                <p className="font-mono text-[10px] tracking-widest text-[#E3A542] uppercase">
-                  Staff picks of the week
-                </p>
-                <h2 className="font-display text-xl font-semibold mt-1">Editor's choice</h2>
-                <div className="flex items-center gap-2 my-2 text-[#E3A542]">
-                  <span aria-hidden="true">★★★★★</span>
-                  <span className="font-mono text-xs text-[#8B8FA0]">4.5</span>
+            {/* Staff picks */}
+            {staffPicks.length > 0 && (
+              <div className="bg-[#1B1D26] rounded-2xl p-5 sm:p-6 border border-[#272A35] flex flex-col md:flex-row gap-5 items-center">
+                <div className="flex gap-3 shrink-0">
+                  {staffPicks.map((t) => (
+                    <MusicImage
+                      key={t.id}
+                      className="w-16 h-16 sm:w-24 sm:h-24 rounded-lg"
+                    />
+                  ))}
                 </div>
-                <p className="text-xs text-[#8B8FA0]">
-                  Summarized review of the selected songs based on emotion, rhythm,
-                  voice quality and audience response.
-                </p>
+
+                <div className="flex-1 min-w-0">
+                  <p className="font-mono text-[10px] tracking-widest text-[#E3A542] uppercase">
+                    Staff picks of the week
+                  </p>
+                  <h2 className="font-display text-xl font-semibold mt-1">Editor's choice</h2>
+                  <div className="flex items-center gap-2 my-2 text-[#E3A542]">
+                    <span aria-hidden="true">★★★★★</span>
+                    <span className="font-mono text-xs text-[#8B8FA0]">4.5</span>
+                  </div>
+                  <p className="text-xs text-[#8B8FA0]">
+                    Summarized review of the selected songs based on emotion, rhythm,
+                    voice quality and audience response.
+                  </p>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Songs grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-              {filteredTracks.map((track) => {
-                const isCurrent = currentTrack.id === track.id;
-                const listening = isCurrent && isPlaying;
-                return (
-                  <div
-                    key={track.id}
-                    className={`bg-[#1B1D26] rounded-xl p-3 border transition-colors flex flex-col ${
-                      isCurrent ? "border-[#E3A542]" : "border-[#272A35] hover:border-[#3A3E4D]"
-                    }`}
-                  >
-                    <img
-                      src={track.img}
-                      alt={track.title}
-                      className="w-full aspect-square rounded-lg object-cover mb-3"
-                    />
+              {loadingTracks && (
+                <p className="col-span-full text-sm text-[#5B5F6E] py-8 text-center">
+                  Loading songs...
+                </p>
+              )}
 
-                    <h3 className="text-sm font-semibold truncate">{track.title}</h3>
-                    <p className="text-xs text-[#8B8FA0] truncate">{track.artist}</p>
-
-                    <div className="flex gap-1.5 mt-2 flex-wrap">
-                      <span className="text-[10px] bg-[#15161D] border border-[#272A35] text-[#8B8FA0] px-2 py-0.5 rounded-full">
-                        {track.genre}
-                      </span>
-                      <span className="text-[10px] bg-[#15161D] border border-[#272A35] text-[#8B8FA0] px-2 py-0.5 rounded-full">
-                        {track.mood}
-                      </span>
-                    </div>
-
-                    <button
-                      onClick={() => handleListen(track)}
-                      className={`focus-ring w-full mt-3 text-xs py-1.5 rounded-lg font-semibold flex items-center justify-center gap-1.5 transition ${
-                        listening
-                          ? "bg-[#E3A542] text-[#121319]"
-                          : "bg-[#F2F1ED] text-[#121319] hover:brightness-95"
+              {!loadingTracks &&
+                filteredTracks.map((track) => {
+                  const isCurrent = currentTrack && currentTrack.id === track.id;
+                  const listening = isCurrent && isPlaying;
+                  return (
+                    <div
+                      key={track.id}
+                      className={`bg-[#1B1D26] rounded-xl p-3 border transition-colors flex flex-col ${
+                        isCurrent ? "border-[#E3A542]" : "border-[#272A35] hover:border-[#3A3E4D]"
                       }`}
                     >
-                      <span aria-hidden="true">{listening ? "❚❚" : "▶"}</span>
-                      {listening ? "Playing" : "Listen"}
-                    </button>
-                  </div>
-                );
-              })}
-              {filteredTracks.length === 0 && (
+                      <MusicImage className="w-full aspect-square rounded-lg mb-3" />
+
+                      <h3 className="text-sm font-semibold truncate">{track.title}</h3>
+
+                      <div className="flex gap-1.5 mt-2 flex-wrap">
+                        <span className="text-[10px] bg-[#15161D] border border-[#272A35] text-[#8B8FA0] px-2 py-0.5 rounded-full">
+                          {track.genre}
+                        </span>
+                      </div>
+
+                      <button
+                        onClick={() => handleListen(track)}
+                        className={`focus-ring w-full mt-3 text-xs py-1.5 rounded-lg font-semibold flex items-center justify-center gap-1.5 transition ${
+                          listening
+                            ? "bg-[#E3A542] text-[#121319]"
+                            : "bg-[#F2F1ED] text-[#121319] hover:brightness-95"
+                        }`}
+                      >
+                        <span aria-hidden="true">{listening ? "❚❚" : "▶"}</span>
+                        {listening ? "Playing" : "Listen"}
+                      </button>
+                    </div>
+                  );
+                })}
+
+              {!loadingTracks && filteredTracks.length === 0 && !fetchError && (
                 <p className="col-span-full text-sm text-[#5B5F6E] py-8 text-center">
-                  No songs match your search.
+                  {tracks.length === 0 ? "No songs uploaded yet." : "No songs match your search."}
                 </p>
               )}
             </div>
@@ -182,7 +374,7 @@ export default function SongsPage() {
                   type="text"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search for artists or songs"
+                  placeholder="Search for songs"
                   className="focus-ring w-full bg-[#15161D] border border-[#272A35] rounded-lg pl-9 pr-4 py-2 text-sm outline-none focus:border-[#E3A542] placeholder:text-[#5B5F6E]"
                 />
               </div>
@@ -232,11 +424,7 @@ export default function SongsPage() {
                       <span className="font-mono text-xs w-5 text-center shrink-0">
                         {index === 0 ? "👑" : index + 1}
                       </span>
-                      <img
-                        src={leader.img}
-                        alt={leader.name}
-                        className="w-9 h-9 rounded-full object-cover shrink-0 ring-1 ring-[#272A35]"
-                      />
+                      <MusicImage className="w-9 h-9 rounded-full shrink-0 ring-1 ring-[#272A35]" />
                       <div className="min-w-0">
                         <h4 className="text-xs font-semibold truncate">{leader.name}</h4>
                         <p className="font-mono text-[10px] text-[#E3A542]">★ {leader.rating}</p>
@@ -297,58 +485,81 @@ export default function SongsPage() {
         <div className="max-w-[1400px] mx-auto flex flex-col md:flex-row items-center gap-3 md:gap-6">
           {/* Current song */}
           <div className="flex items-center gap-3 w-full md:w-64 shrink-0 min-w-0">
-            <img
-              src={currentTrack.img}
-              alt={currentTrack.title}
-              className="w-10 h-10 rounded-lg object-cover shrink-0"
-            />
+            <MusicImage className="w-10 h-10 rounded-lg shrink-0" />
             <div className="min-w-0">
-              <h4 className="text-xs font-semibold truncate">{currentTrack.title}</h4>
-              <p className="text-[10px] text-[#8B8FA0] truncate">{currentTrack.artist}</p>
+              <h4 className="text-xs font-semibold truncate">
+                {currentTrack ? currentTrack.title : "Nothing playing"}
+              </h4>
+              <p className="text-[10px] text-[#8B8FA0] truncate">
+                {playbackError || (currentTrack ? currentTrack.genre : "Pick a song to start")}
+              </p>
             </div>
           </div>
 
           {/* Player controls */}
           <div className="flex-1 w-full flex flex-col items-center gap-2 min-w-0">
             <div className="flex items-center gap-5 text-[#8B8FA0]">
-              <button className="focus-ring hover:text-white transition-colors" aria-label="Previous track">
+              <button
+                onClick={() => playAdjacent(-1)}
+                disabled={!currentTrack}
+                className="focus-ring hover:text-white transition-colors disabled:opacity-40"
+                aria-label="Previous track"
+              >
                 ⏮
               </button>
               <button
-                onClick={() => setIsPlaying((p) => !p)}
-                className="focus-ring w-9 h-9 rounded-full bg-[#E3A542] hover:brightness-110 text-[#121319] flex items-center justify-center transition"
+                onClick={togglePlay}
+                disabled={!currentTrack}
+                className="focus-ring w-9 h-9 rounded-full bg-[#E3A542] hover:brightness-110 text-[#121319] flex items-center justify-center transition disabled:opacity-40"
                 aria-label={isPlaying ? "Pause" : "Play"}
               >
                 {isPlaying ? "❚❚" : "▶"}
               </button>
-              <button className="focus-ring hover:text-white transition-colors" aria-label="Next track">
+              <button
+                onClick={() => playAdjacent(1)}
+                disabled={!currentTrack}
+                className="focus-ring hover:text-white transition-colors disabled:opacity-40"
+                aria-label="Next track"
+              >
                 ⏭
               </button>
             </div>
 
             <div className="w-full flex items-center gap-3 font-mono text-[10px] text-[#5B5F6E]">
-              <span className="shrink-0 w-9 text-right">00:00</span>
+              <span className="shrink-0 w-9 text-right">{formatTime(currentTime)}</span>
               <div className="flex-1 h-6 flex items-end justify-center gap-[3px] overflow-hidden">
                 {BAR_HEIGHTS.map((height, index) => (
                   <div
                     key={index}
                     style={{ height: `${height}%` }}
                     className={`w-[3px] rounded-full origin-bottom ${
-                      isPlaying && index < 12 ? "bar-anim" : ""
-                    } ${index < 12 ? "bg-[#E3A542]" : "bg-[#272A35]"}`}
+                      isPlaying && index < activeBars ? "bar-anim" : ""
+                    } ${index < activeBars ? "bg-[#E3A542]" : "bg-[#272A35]"}`}
                   />
                 ))}
               </div>
-              <span className="shrink-0 w-9">-0:33</span>
+              <span className="shrink-0 w-9">
+                -{formatTime(Math.max(duration - currentTime, 0))}
+              </span>
             </div>
           </div>
 
           {/* Right controls */}
           <div className="w-full md:w-56 shrink-0 flex items-center justify-center md:justify-end gap-4 text-[#8B8FA0]">
-            <button className="focus-ring hover:text-white text-[11px] uppercase tracking-wide transition-colors">
+            <button
+              onClick={() => setLoop((l) => !l)}
+              className={`focus-ring text-[11px] uppercase tracking-wide transition-colors ${
+                loop ? "text-[#E3A542]" : "hover:text-white"
+              }`}
+            >
               Loop
             </button>
-            <button className="focus-ring hover:text-white text-[11px] uppercase tracking-wide transition-colors">
+            <button
+              onClick={() => setShuffle((s) => !s)}
+              className={`focus-ring text-[11px] uppercase tracking-wide transition-colors ${
+                shuffle ? "text-[#E3A542]" : "hover:text-white"
+              }`}
+            >
               Shuffle
             </button>
             <div className="hidden sm:flex items-center gap-2">
@@ -365,6 +576,7 @@ export default function SongsPage() {
                 min="0"
                 max="100"
                 defaultValue="70"
+                onChange={handleVolumeChange}
                 className="amber-range w-20"
                 aria-label="Volume"
               />

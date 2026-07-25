@@ -7,14 +7,22 @@ import { connect } from "mongoose";
 const prisma = new PrismaClient();
 
 const createSong = asyncHandler(async (req, res) => {
-    let { title, description, genreId, audioFileId } = req.body;
+    let { title, description, genreId, audioFileId, forSale, price } = req.body;
+    console.log("BODY RECEIVED: ", req.body);
+    const userId = req.user.id;
 
     if (
         [title, description].some((field) => !field || field?.trim() === "")
         ||
-        [audioFileId, genreId].some((field) => !field)
+        [audioFileId, genreId, userId].some((field) => field === undefined || field === null)
+        ||
+        price === undefined || price === null
     ) {
         throw new ApiError(401, "All fields are required");
+    }
+
+    if (forSale === false) {
+        price = 0;
     }
 
     let song = await prisma.song.create({
@@ -30,7 +38,14 @@ const createSong = asyncHandler(async (req, res) => {
                 connect: {
                     id: parseInt(audioFileId, 10)
                 }
-            }
+            },
+            user: {
+                connect: {
+                    id: userId
+                }
+            },
+            forSale: forSale,
+            price: price
         }
     });
 
