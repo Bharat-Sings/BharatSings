@@ -2,7 +2,6 @@ import { PrismaClient } from "@prisma/client";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { IoPrismSharp } from "react-icons/io5";
 
 const prisma = new PrismaClient();
 
@@ -20,9 +19,19 @@ const createSongReview = asyncHandler(async(req, res) => {
     const songReview = await prisma.song_review.create({
         data: {
             user_id,
-            song_id,
+            song_id: parseInt(song_id, 10),
             review_text,
             rating
+        },
+        // Pull the commenter's info back immediately so the frontend
+        // doesn't need a second round trip after posting.
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    display_name: true, // adjust if your User model uses a different field
+                }
+            }
         }
     });
 
@@ -52,7 +61,18 @@ const findSongReviewsBySongId = asyncHandler(async(req, res) => {
 
     const songReviews = await prisma.song_review.findMany({
         where: {
-            song_id: song_id
+            song_id: parseInt(song_id, 10)
+        },
+        include: {
+            user: {
+                select: {
+                    id: true,
+                    display_name: true, // adjust if your User model uses a different field
+                }
+            }
+        },
+        orderBy: {
+            id: "desc"
         }
     });
 
@@ -60,10 +80,14 @@ const findSongReviewsBySongId = asyncHandler(async(req, res) => {
         throw new ApiError(500, "Error finding song reviews");
     }
 
+    // BUG FIX: this previously returned `new ApiError(...)` on a
+    // successful (200) response, which put the payload in the wrong
+    // field and marked the response as unsuccessful. Now uses
+    // ApiResponse, matching every other controller.
     return res
     .status(200)
     .json(
-        new ApiError(
+        new ApiResponse(
             200,
             {
                 songReviews: songReviews

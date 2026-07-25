@@ -2,13 +2,11 @@ import { asyncHandler } from "../utils/AsyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { PrismaClient } from "@prisma/client";
-import { connect } from "mongoose";
 
 const prisma = new PrismaClient();
 
 const createSong = asyncHandler(async (req, res) => {
     let { title, description, genreId, audioFileId, forSale, price } = req.body;
-    console.log("BODY RECEIVED: ", req.body);
     const userId = req.user.id;
 
     if (
@@ -67,7 +65,21 @@ const createSong = asyncHandler(async (req, res) => {
 });
 
 const findSongs = asyncHandler(async (req, res) => {
-    const songs = await prisma.song.findMany();
+    const songs = await prisma.song.findMany({
+        include: {
+            audio_file: true,
+            genre: true,
+            user: {
+                select: {
+                    id: true,
+                    display_name: true,
+                }
+            }
+        },
+        orderBy: {
+            id: "desc"
+        }
+    });
 
     if (!songs) {
         throw new ApiError(500, "Error finding songs");
@@ -96,6 +108,13 @@ const findSongsByGenreId = asyncHandler(async (req, res) => {
     const songs = await prisma.song.findMany({
         where: {
             genre_id: parseInt(genreId)
+        },
+        include: {
+            audio_file: true,
+            genre: true,
+            user: {
+                select: { id: true, display_name: true }
+            }
         }
     });
 
@@ -126,6 +145,13 @@ const findSongsByTitle = asyncHandler(async (req, res) => {
     const songs = await prisma.song.findMany({
         where: {
             title: title
+        },
+        include: {
+            audio_file: true,
+            genre: true,
+            user: {
+                select: { id: true, display_name: true }
+            }
         }
     });
 
@@ -146,9 +172,47 @@ const findSongsByTitle = asyncHandler(async (req, res) => {
     )
 });
 
+// FIX: songId comes from req.query, which is always a string. This
+// was crashing every request with "Expected Int, provided String".
+const findSongById = asyncHandler(async(req, res) => {
+    let { songId } = req.query;
+
+    if (!songId) {
+        throw new ApiError(400, "Song Id undefined");
+    }
+
+    const song = await prisma.song.findUnique({
+        where: {
+            id: parseInt(songId, 10)
+        },
+        include: {
+            user: {
+                select: { id: true, display_name: true }
+            }
+        }
+    });
+
+    if (!song) {
+        throw new ApiError(500, "Error finding song");
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                song: song
+            },
+            "Successfully found song"
+        )
+    );
+});
+
 export {
     createSong,
     findSongs,
     findSongsByGenreId,
-    findSongsByTitle
+    findSongsByTitle,
+    findSongById
 }

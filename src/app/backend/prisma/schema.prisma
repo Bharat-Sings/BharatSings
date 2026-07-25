@@ -30,6 +30,7 @@ model User {
   likes           like[]
   wishlists       wishlist[]
   enrollments     enrollment[]
+  song_reviews    song_review[]
 }
 
 model Song {
@@ -60,6 +61,7 @@ model Song {
   lyrics         lyrics?         @relation(fields: [lyricsId], references: [id])
   lyricsId       Int?
   forSale        Boolean
+  song_reviews   song_review[]
 }
 
 model audio_file {
@@ -185,6 +187,8 @@ model song_review {
   rating      Int
   song_id     Int
   created_at  DateTime @default(now())
+  user        User     @relation(fields: [user_id], references: [id])
+  song        Song     @relation(fields: [song_id], references: [id])
 }
 
 model course_review {

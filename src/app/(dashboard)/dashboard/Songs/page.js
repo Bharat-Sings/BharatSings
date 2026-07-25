@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 
 /* Shared design system with Marketplace.jsx
@@ -45,6 +46,8 @@ function formatTime(seconds) {
 }
 
 export default function SongsPage() {
+  const router = useRouter();
+
   // No fake persons — leaderboard stays empty until you wire it to a real endpoint.
   const LEADERS = [];
 
@@ -88,6 +91,7 @@ export default function SongsPage() {
                 id: song.id,
                 title: song.title,
                 genre: genreWithId[song.genreId] || "Unknown",
+                uploader: song.user?.display_name || "Unknown Artist",
                 url,
               };
             } catch (err) {
@@ -185,6 +189,15 @@ export default function SongsPage() {
       }
     },
     [currentTrack, goToTrack]
+  );
+
+  // Navigates to /dashboard/Songs/[id] — used when the card itself
+  // (not the Listen button) is clicked.
+  const openSongPage = useCallback(
+    (track) => {
+      router.push(`/dashboard/Songs/${track.id}`);
+    },
+    [router]
   );
 
   const togglePlay = useCallback(() => {
@@ -315,13 +328,20 @@ export default function SongsPage() {
                   return (
                     <div
                       key={track.id}
-                      className={`bg-[#1B1D26] rounded-xl p-3 border transition-colors flex flex-col ${
+                      onClick={() => openSongPage(track)}
+                      role="link"
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") openSongPage(track);
+                      }}
+                      className={`cursor-pointer bg-[#1B1D26] rounded-xl p-3 border transition-colors flex flex-col ${
                         isCurrent ? "border-[#E3A542]" : "border-[#272A35] hover:border-[#3A3E4D]"
                       }`}
                     >
                       <MusicImage className="w-full aspect-square rounded-lg mb-3" />
 
                       <h3 className="text-sm font-semibold truncate">{track.title}</h3>
+                      <p className="text-xs text-[#8B8FA0] truncate">{track.uploader}</p>
 
                       <div className="flex gap-1.5 mt-2 flex-wrap">
                         <span className="text-[10px] bg-[#15161D] border border-[#272A35] text-[#8B8FA0] px-2 py-0.5 rounded-full">
@@ -330,7 +350,12 @@ export default function SongsPage() {
                       </div>
 
                       <button
-                        onClick={() => handleListen(track)}
+                        onClick={(e) => {
+                          // Don't let the click bubble up to the card
+                          // and trigger navigation — just play/pause.
+                          e.stopPropagation();
+                          handleListen(track);
+                        }}
                         className={`focus-ring w-full mt-3 text-xs py-1.5 rounded-lg font-semibold flex items-center justify-center gap-1.5 transition ${
                           listening
                             ? "bg-[#E3A542] text-[#121319]"
@@ -491,7 +516,7 @@ export default function SongsPage() {
                 {currentTrack ? currentTrack.title : "Nothing playing"}
               </h4>
               <p className="text-[10px] text-[#8B8FA0] truncate">
-                {playbackError || (currentTrack ? currentTrack.genre : "Pick a song to start")}
+                {playbackError || (currentTrack ? currentTrack.uploader : "Pick a song to start")}
               </p>
             </div>
           </div>

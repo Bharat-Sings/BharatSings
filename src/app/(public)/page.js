@@ -1,6 +1,9 @@
+"use client";
+
 import React from "react";
 import Navbar from "../Components/Navbar";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 import landingPageTopSection from "../Images/landingPageTopSection.png";
 import landingPageSinger from "../Images/landingPageSinger.jpg";
@@ -8,6 +11,8 @@ import landingPageMusicSign from "../Images/landingPageMusicSign.png";
 import landingPageGuitar from "../Images/landingPageGuitar.png";
 
 export default function Home() {
+    const router = useRouter();
+
     return (
         <div className="bg-white min-h-screen w-full overflow-x-hidden">
             <Image
@@ -37,9 +42,10 @@ export default function Home() {
                         <div className="flex flex-col sm:flex-row gap-5 justify-center lg:justify-start mt-10">
 
                             <button
-                                className="bg-purple-700 text-white px-10 py-3 rounded-full
-                                font-bold text-lg hover:bg-white hover:text-purple-700
-                                border-2 border-purple-700 transition">
+                                className="bg-purple-700 text-white px-10 py-3 rounded-full font-bold text-lg hover:bg-white hover:text-purple-700 border-2 border-purple-700 transition"
+                                onClick={() => {
+                                    router.push("/Register");
+                                }}>
 
                                 REGISTER
 
@@ -48,7 +54,10 @@ export default function Home() {
                             <button
                                 className="bg-white text-purple-700 px-10 py-3 rounded-full
                                 font-bold text-lg border-2 border-purple-700
-                                hover:bg-purple-700 hover:text-white transition">
+                                hover:bg-purple-700 hover:text-white transition"
+                                onClick={() => {
+                                    router.push("/Login");
+                                }}>
 
                                 LOGIN
 
@@ -101,7 +110,10 @@ export default function Home() {
                         <button
                             className="mt-10 bg-purple-700 text-white px-10 py-3
                             rounded-full font-bold text-lg border-2 border-purple-700
-                            hover:bg-white hover:text-purple-700 transition">
+                            hover:bg-white hover:text-purple-700 transition"
+                            onClick={() => {
+                                router.push("/Login");
+                            }}>
 
                             EXPLORE SONGS
 
@@ -131,7 +143,10 @@ export default function Home() {
                         <button
                             className="mt-10 bg-purple-700 text-white px-10 py-3
                             rounded-full font-bold text-lg border-2 border-purple-700
-                            hover:bg-white hover:text-purple-700 transition">
+                            hover:bg-white hover:text-purple-700 transition"
+                            onClick={() => {
+                                router.push("/Login");
+                            }}>
 
                             FIND COURSES
 
