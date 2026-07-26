@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { useAuth } from "@/app/context/AuthContext";
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URI;
 
 const genreWithId = {
   1: "Classical",
