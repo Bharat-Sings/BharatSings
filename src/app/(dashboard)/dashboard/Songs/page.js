@@ -8,7 +8,7 @@ import axios from "axios";
    bg #121319 · panel #1B1D26 · panel-2 #15161D · border #272A35
    accent #E3A542 (amber) · live #4FD1C5 (teal, reserved for ratings/status) */
 
-const API_BASE = "http://localhost:5000";
+const API_BASE = process.env.BACKEND_URI;
 
 // Same mapping used on the upload page.
 const genreWithId = {

@@ -16,11 +16,13 @@ function Login() {
 
   const { login } = useAuth();
 
+  const API_BASE = process.env.BACKEND_URI;
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     // Handle login verification logic here
     try {
-      const response = await fetch("http://localhost:5000/api/v1/users/login", {
+      const response = await fetch(`${API_BASE}/api/v1/users/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -87,10 +87,12 @@ function Dashboard() {
     return null;
   }
 
+  const API_BASE = process.env.BACKEND_URI;
+
   const logout = async () => {
     try {
       await axios.post(
-        "http://localhost:5000/api/v1/users/logout",
+        `${API_BASE}/api/v1/users/logout`,
         {},
         { withCredentials: true }
       );
