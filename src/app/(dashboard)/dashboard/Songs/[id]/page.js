@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { useAuth } from "@/app/context/AuthContext";
 
-const API_BASE = process.env.BACKEND_URI;
+const NEXT_PUBLIC_API_BASE = process.env.BACKEND_URI;
 
 const genreWithId = {
   1: "Classical",
@@ -164,7 +164,7 @@ export default function SongDetailPage() {
       setLoadingSong(true);
       setSongError(null);
       try {
-        const res = await axios.get(`${API_BASE}/api/v1/songs/findSongById`, {
+        const res = await axios.get(`${NEXT_PUBLIC_API_BASE}/api/v1/songs/findSongById`, {
           params: { songId: id },
           headers: authHeaders,
         });
@@ -178,7 +178,7 @@ export default function SongDetailPage() {
         if (audioFileId) {
           try {
             const audioRes = await axios.get(
-              `${API_BASE}/api/v1/audiofiles/findAudioFileById`,
+              `${NEXT_PUBLIC_API_BASE}/api/v1/audiofiles/findAudioFileById`,
               { params: { audioFileId }, headers: authHeaders }
             );
             url = audioRes.data?.data?.audioFile?.url || null;
@@ -245,7 +245,7 @@ export default function SongDetailPage() {
     if (!idIsValid) return;
     setLoadingLikes(true);
     try {
-      const res = await axios.get(`${API_BASE}/api/v1/likes/findLikesBySongId`, {
+      const res = await axios.get(`${NEXT_PUBLIC_API_BASE}/api/v1/likes/findLikesBySongId`, {
         params: { song_id: id },
         headers: authHeaders,
       });
@@ -273,8 +273,8 @@ export default function SongDetailPage() {
     setLikeBusy(true);
     try {
       const endpoint = liked
-        ? `${API_BASE}/api/v1/likes/deleteLikeForSong`
-        : `${API_BASE}/api/v1/likes/createLikeForSong`;
+        ? `${NEXT_PUBLIC_API_BASE}/api/v1/likes/deleteLikeForSong`
+        : `${NEXT_PUBLIC_API_BASE}/api/v1/likes/createLikeForSong`;
 
       await axios.post(
         endpoint,
@@ -300,7 +300,7 @@ export default function SongDetailPage() {
     setCommentsError(null);
     try {
       const res = await axios.get(
-        `${API_BASE}/api/v1/songreviews/findSongReviewsBySongId`,
+        `${NEXT_PUBLIC_API_BASE}/api/v1/songreviews/findSongReviewsBySongId`,
         { params: { song_id: id }, headers: authHeaders }
       );
       const list = res.data?.data?.songReviews || [];
@@ -333,7 +333,7 @@ export default function SongDetailPage() {
     setPosting(true);
     try {
       await axios.post(
-        `${API_BASE}/api/v1/songreviews/createSongReview`,
+        `${NEXT_PUBLIC_API_BASE}/api/v1/songreviews/createSongReview`,
         {
           user_id: user.id,
           song_id: id,

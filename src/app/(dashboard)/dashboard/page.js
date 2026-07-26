@@ -87,12 +87,12 @@ function Dashboard() {
     return null;
   }
 
-  const API_BASE = process.env.BACKEND_URI;
+  const NEXT_PUBLIC_API_BASE = process.env.BACKEND_URI;
 
   const logout = async () => {
     try {
       await axios.post(
-        `${API_BASE}/api/v1/users/logout`,
+        `${NEXT_PUBLIC_API_BASE}/api/v1/users/logout`,
         {},
         { withCredentials: true }
       );

@@ -16,13 +16,13 @@ function Login() {
 
   const { login } = useAuth();
 
-  const API_BASE = process.env.BACKEND_URI;
+  const NEXT_PUBLIC_API_BASE = process.env.BACKEND_URI;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     // Handle login verification logic here
     try {
-      const response = await fetch(`${API_BASE}/api/v1/users/login`, {
+      const response = await fetch(`${NEXT_PUBLIC_API_BASE}/api/v1/users/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -34,12 +34,12 @@ function Login() {
         }),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
         alert(data.message);
         return;
       }
-
-      const data = await response.json();
 
       login(data.user, data.accessToken);
       router.push("/dashboard");

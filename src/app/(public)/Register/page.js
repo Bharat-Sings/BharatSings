@@ -19,13 +19,13 @@ function Register() {
   const router = useRouter();
   const { login } = useAuth();
 
-  const API_BASE = process.env.BACKEND_URI;
+  const NEXT_PUBLIC_API_BASE = process.env.BACKEND_URI;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     try {
-      const response = await fetch(`${BACKEND_URI}/api/v1/users/register`, {
+      const response = await fetch(`${NEXT_PUBLIC_API_BASE}/api/v1/users/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

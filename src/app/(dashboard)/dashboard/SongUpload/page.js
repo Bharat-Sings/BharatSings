@@ -35,7 +35,7 @@ function UploadPage() {
     return null;
   }
 
-  const API_BASE = process.env.BACKEND_URI;
+  const NEXT_PUBLIC_API_BASE = process.env.BACKEND_URI;
 
   const genres = ['Classical', 'Folk', 'Pop', 'Instrumental', 'Fusion'];
 
@@ -140,7 +140,7 @@ function UploadPage() {
       console.log(data.secure_url);
 
       const res1 = await fetch(
-        `${API_BASE}/api/v1/audiofiles/createAudioFile`,
+        `${NEXT_PUBLIC_API_BASE}/api/v1/audiofiles/createAudioFile`,
         {
           method: "POST",
           headers: {
@@ -164,7 +164,7 @@ function UploadPage() {
       console.log("Audio ID: ", audioId);
 
       const res2 = await fetch(
-        `${API_BASE}/api/v1/songs/createSong`,
+        `${NEXT_PUBLIC_API_BASE}/api/v1/songs/createSong`,
         {
           method: "POST",
           headers: {

@@ -8,7 +8,7 @@ import axios from "axios";
    bg #121319 · panel #1B1D26 · panel-2 #15161D · border #272A35
    accent #E3A542 (amber) · live #4FD1C5 (teal, reserved for ratings/status) */
 
-const API_BASE = process.env.BACKEND_URI;
+const NEXT_PUBLIC_API_BASE = process.env.BACKEND_URI;
 
 // Same mapping used on the upload page.
 const genreWithId = {
@@ -75,14 +75,14 @@ export default function SongsPage() {
       setLoadingTracks(true);
       setFetchError(null);
       try {
-        const res = await axios.get(`${API_BASE}/api/v1/songs/findSongs`);
+        const res = await axios.get(`${NEXT_PUBLIC_API_BASE}/api/v1/songs/findSongs`);
         const songs = res.data?.data?.songs || [];
 
         const withAudio = await Promise.all(
           songs.map(async (song) => {
             try {
               const audioRes = await axios.get(
-                `${API_BASE}/api/v1/audiofiles/findAudioFileById`,
+                `${NEXT_PUBLIC_API_BASE}/api/v1/audiofiles/findAudioFileById`,
                 { params: { audioFileId: song.audio_file_id } }
               );
               const url = audioRes.data?.data?.audioFile?.url || null;
