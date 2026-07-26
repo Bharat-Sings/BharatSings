@@ -150,6 +150,7 @@ function ScoreBar({ label, value }) {
 }
 
 export default function SongDetailPage() {
+  const params = useParams();
   const router = useRouter();
   const { user, accessToken } = useAuth();
 
@@ -345,7 +346,7 @@ export default function SongDetailPage() {
     setLoadingStructured(true);
     try {
       const res = await axios.get(
-        `${NEXT_PUBLIC_API_BASE}/api/v1/structuredreviews/findStructuredReviewsBySongId`,
+        `${API_BASE}/api/v1/structuredreviews/findStructuredReviewsBySongId`,
         { params: { songId: id }, headers: authHeaders }
       );
       setStructuredReviews(res.data?.data?.structuredReviews || []);
@@ -395,7 +396,7 @@ export default function SongDetailPage() {
     setSubmittingStructured(true);
     try {
       await axios.post(
-        `${NEXT_PUBLIC_API_BASE}/api/v1/structuredreviews/createStructuredReview`,
+        `${API_BASE}/api/v1/structuredreviews/createStructuredReview`,
         { songId: id, userId: user.id, melody, rhythm, pitch, voice },
         { headers: authHeaders }
       );
