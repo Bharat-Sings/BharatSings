@@ -35,7 +35,7 @@ function UploadPage() {
     return null;
   }
 
-  const NEXT_PUBLIC_API_BASE = process.env.BACKEND_URI;
+  const NEXT_PUBLIC_API_BASE = process.env.NEXT_PUBLIC_BACKEND_URI;
 
   const genres = ['Classical', 'Folk', 'Pop', 'Instrumental', 'Fusion'];
 
