@@ -4,6 +4,8 @@ import React from "react";
 import Navbar from "../Components/Navbar";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 
 import landingPageTopSection from "../Images/landingPageTopSection.png";
 import landingPageSinger from "../Images/landingPageSinger.jpg";
@@ -12,6 +14,19 @@ import landingPageGuitar from "../Images/landingPageGuitar.png";
 
 export default function Home() {
     const router = useRouter();
+    const { user, loading } = useAuth();
+
+    useEffect(() => {
+        if (loading) return;
+
+        if (user) {
+            router.replace("/dashboard");
+        }
+    }, [user, loading]);
+
+    if (loading) {
+        return <h1>Loading...</h1>;
+    }
 
     return (
         <div className="bg-white min-h-screen w-full overflow-x-hidden">
