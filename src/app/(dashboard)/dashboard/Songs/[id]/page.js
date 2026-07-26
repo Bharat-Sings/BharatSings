@@ -73,6 +73,33 @@ function StarRatingInput({ value, onChange }) {
   );
 }
 
+function LikesDropdown({ likes, onClose }) {
+  return (
+    <div
+      className="absolute right-0 top-full mt-2 w-64 max-h-72 overflow-y-auto bg-[#1B1D26] border border-[#272A35] rounded-xl shadow-xl z-20 p-2"
+      onMouseLeave={onClose}
+    >
+      {likes.length === 0 ? (
+        <p className="text-xs text-[#5B5F6E] text-center py-4">No likes yet.</p>
+      ) : (
+        <ul className="space-y-1">
+          {likes.map((l) => (
+            <li
+              key={l.id}
+              className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg hover:bg-[#15161D] transition-colors"
+            >
+              <div className="w-7 h-7 rounded-full bg-[#15161D] border border-[#272A35] flex items-center justify-center shrink-0 text-[10px] font-semibold text-[#E3A542]">
+                {(l.user?.display_name || "?").charAt(0).toUpperCase()}
+              </div>
+              <span className="text-sm truncate">{l.user?.display_name || "Anonymous"}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 function StarRatingDisplay({ rating }) {
   return (
     <div className="flex items-center gap-0.5" aria-label={`${rating} out of 5 stars`}>
@@ -108,9 +135,11 @@ export default function SongDetailPage() {
   const [playbackError, setPlaybackError] = useState(null);
   const audioRef = useRef(null);
 
-  // --- Likes (UI only, not wired up yet) ---
-  const [liked, setLiked] = useState(false);
-  const [likeCount, setLikeCount] = useState(0);
+  // --- Likes ---
+  const [likes, setLikes] = useState([]);
+  const [loadingLikes, setLoadingLikes] = useState(true);
+  const [likeBusy, setLikeBusy] = useState(false);
+  const [likesOpen, setLikesOpen] = useState(false);
 
   // --- Comments ---
   const [comments, setComments] = useState([]);
@@ -211,13 +240,55 @@ export default function SongDetailPage() {
     setIsPlaying((p) => !p);
   }, [song?.url]);
 
-  const toggleLike = useCallback(() => {
-    // UI-only for now — no request is sent yet.
-    setLiked((prev) => {
-      setLikeCount((c) => c + (prev ? -1 : 1));
-      return !prev;
-    });
-  }, []);
+  // Fetch likes for this song
+  const loadLikes = useCallback(async () => {
+    if (!idIsValid) return;
+    setLoadingLikes(true);
+    try {
+      const res = await axios.get(`${API_BASE}/api/v1/likes/findLikesBySongId`, {
+        params: { song_id: id },
+        headers: authHeaders,
+      });
+      setLikes(res.data?.data?.likes || []);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoadingLikes(false);
+    }
+  }, [id, idIsValid, authHeaders]);
+
+  useEffect(() => {
+    loadLikes();
+  }, [loadLikes]);
+
+  const liked = useMemo(
+    () => !!user && likes.some((l) => l.user_id === user.id),
+    [likes, user]
+  );
+
+  const toggleLike = useCallback(async () => {
+    if (!user) return;
+    if (!idIsValid || likeBusy) return;
+
+    setLikeBusy(true);
+    try {
+      const endpoint = liked
+        ? `${API_BASE}/api/v1/likes/deleteLikeForSong`
+        : `${API_BASE}/api/v1/likes/createLikeForSong`;
+
+      await axios.post(
+        endpoint,
+        { user_id: user.id, song_id: id },
+        { headers: authHeaders }
+      );
+
+      await loadLikes();
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLikeBusy(false);
+    }
+  }, [user, liked, id, idIsValid, likeBusy, authHeaders, loadLikes]);
 
   const progress = duration > 0 ? currentTime / duration : 0;
   const activeBars = Math.round(progress * BAR_HEIGHTS.length);
@@ -353,19 +424,36 @@ export default function SongDetailPage() {
                   )}
                 </div>
 
-                {/* Like button — UI only, no backend call yet */}
-                <button
-                  onClick={toggleLike}
-                  className={`focus-ring shrink-0 flex items-center gap-2 px-4 py-2 rounded-full border transition ${
-                    liked
-                      ? "bg-[#E3A542]/15 border-[#E3A542] text-[#E3A542]"
-                      : "bg-[#15161D] border-[#272A35] text-[#8B8FA0] hover:text-white hover:border-[#3A3E4D]"
-                  }`}
-                  aria-pressed={liked}
-                >
-                  <HeartIcon filled={liked} />
-                  <span className="text-sm font-semibold">{likeCount}</span>
-                </button>
+                {/* Like button + likers dropdown */}
+                <div className="relative shrink-0">
+                  <div
+                    className={`flex items-center rounded-full border overflow-hidden ${
+                      liked
+                        ? "bg-[#E3A542]/15 border-[#E3A542] text-[#E3A542]"
+                        : "bg-[#15161D] border-[#272A35] text-[#8B8FA0]"
+                    }`}
+                  >
+                    <button
+                      onClick={toggleLike}
+                      disabled={!user || likeBusy}
+                      title={!user ? "Log in to like this song" : undefined}
+                      className="focus-ring flex items-center gap-2 pl-4 pr-3 py-2 hover:text-white transition disabled:opacity-50 disabled:hover:text-inherit"
+                      aria-pressed={liked}
+                    >
+                      <HeartIcon filled={liked} />
+                    </button>
+                    <button
+                      onClick={() => setLikesOpen((o) => !o)}
+                      className="focus-ring pr-4 pl-1 py-2 text-sm font-semibold hover:text-white transition border-l border-[#272A35]"
+                    >
+                      {loadingLikes ? "…" : likes.length}
+                    </button>
+                  </div>
+
+                  {likesOpen && (
+                    <LikesDropdown likes={likes} onClose={() => setLikesOpen(false)} />
+                  )}
+                </div>
               </div>
 
               {/* Player */}
