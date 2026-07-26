@@ -157,10 +157,41 @@ const findCoursesByLanguage = asyncHandler(async(req, res) => {
     )
 });
 
+const findCoursesByTrainerId = asyncHandler(async(req, res) => {
+    let { trainer_id } = req.query;
+
+    if (!trainer_id) {
+        throw new ApiError(400, "Trainer Id undefined");
+    }
+
+    const courses = await prisma.course.findMany({
+        where: {
+            trainer_id: trainer_id
+        }
+    });
+
+    if (!courses) {
+        throw new ApiError(500, "Error finding courses");
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                courses: courses
+            },
+            "Successfully found courses"
+        )
+    );
+});
+
 export {
     createCourse,
     findCourses,
     findCoursesByTitle,
     findCoursesByCategory,
-    findCoursesByLanguage
+    findCoursesByLanguage,
+    findCoursesByTrainerId
 }

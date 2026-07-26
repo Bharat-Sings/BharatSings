@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import axios from "axios";
 import { useAuth } from "@/app/context/AuthContext";
 
-const NEXT_PUBLIC_API_BASE = process.env.NEXT_PUBLIC_BACKEND_URI;
+const API_BASE = "http://localhost:5000";
 
 const genreWithId = {
   1: "Classical",
@@ -112,8 +112,44 @@ function StarRatingDisplay({ rating }) {
   );
 }
 
+function ScoreSlider({ label, value, onChange }) {
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-[#C9CAD1] font-medium">{label}</span>
+        <span className="font-mono text-[#E3A542]">{value}</span>
+      </div>
+      <input
+        type="range"
+        min="0"
+        max="100"
+        value={value}
+        onChange={(e) => onChange(Number(e.target.value))}
+        className="w-full h-1.5 rounded-full appearance-none bg-[#272A35] accent-[#E3A542] cursor-pointer"
+      />
+    </div>
+  );
+}
+
+function ScoreBar({ label, value }) {
+  const pct = Math.max(0, Math.min(100, value));
+  return (
+    <div className="space-y-1.5">
+      <div className="flex items-center justify-between text-xs">
+        <span className="text-[#8B8FA0]">{label}</span>
+        <span className="font-mono text-[#E3A542]">{pct.toFixed(0)}</span>
+      </div>
+      <div className="h-2 rounded-full bg-[#272A35] overflow-hidden">
+        <div
+          className="h-full rounded-full bg-gradient-to-r from-[#E3A542] to-[#F5D28A] transition-all"
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default function SongDetailPage() {
-  const params = useParams();
   const router = useRouter();
   const { user, accessToken } = useAuth();
 
@@ -141,6 +177,16 @@ export default function SongDetailPage() {
   const [likeBusy, setLikeBusy] = useState(false);
   const [likesOpen, setLikesOpen] = useState(false);
 
+  // --- Structured reviews (melody/rhythm/pitch/voice, 0-100) ---
+  const [structuredReviews, setStructuredReviews] = useState([]);
+  const [loadingStructured, setLoadingStructured] = useState(true);
+  const [melody, setMelody] = useState(50);
+  const [rhythm, setRhythm] = useState(50);
+  const [pitch, setPitch] = useState(50);
+  const [voice, setVoice] = useState(50);
+  const [submittingStructured, setSubmittingStructured] = useState(false);
+  const [structuredSubmitError, setStructuredSubmitError] = useState(null);
+
   // --- Comments ---
   const [comments, setComments] = useState([]);
   const [loadingComments, setLoadingComments] = useState(true);
@@ -164,7 +210,7 @@ export default function SongDetailPage() {
       setLoadingSong(true);
       setSongError(null);
       try {
-        const res = await axios.get(`${NEXT_PUBLIC_API_BASE}/api/v1/songs/findSongById`, {
+        const res = await axios.get(`${API_BASE}/api/v1/songs/findSongById`, {
           params: { songId: id },
           headers: authHeaders,
         });
@@ -178,7 +224,7 @@ export default function SongDetailPage() {
         if (audioFileId) {
           try {
             const audioRes = await axios.get(
-              `${NEXT_PUBLIC_API_BASE}/api/v1/audiofiles/findAudioFileById`,
+              `${API_BASE}/api/v1/audiofiles/findAudioFileById`,
               { params: { audioFileId }, headers: authHeaders }
             );
             url = audioRes.data?.data?.audioFile?.url || null;
@@ -245,7 +291,7 @@ export default function SongDetailPage() {
     if (!idIsValid) return;
     setLoadingLikes(true);
     try {
-      const res = await axios.get(`${NEXT_PUBLIC_API_BASE}/api/v1/likes/findLikesBySongId`, {
+      const res = await axios.get(`${API_BASE}/api/v1/likes/findLikesBySongId`, {
         params: { song_id: id },
         headers: authHeaders,
       });
@@ -273,8 +319,8 @@ export default function SongDetailPage() {
     setLikeBusy(true);
     try {
       const endpoint = liked
-        ? `${NEXT_PUBLIC_API_BASE}/api/v1/likes/deleteLikeForSong`
-        : `${NEXT_PUBLIC_API_BASE}/api/v1/likes/createLikeForSong`;
+        ? `${API_BASE}/api/v1/likes/deleteLikeForSong`
+        : `${API_BASE}/api/v1/likes/createLikeForSong`;
 
       await axios.post(
         endpoint,
@@ -293,6 +339,77 @@ export default function SongDetailPage() {
   const progress = duration > 0 ? currentTime / duration : 0;
   const activeBars = Math.round(progress * BAR_HEIGHTS.length);
 
+  // Fetch structured reviews for this song
+  const loadStructuredReviews = useCallback(async () => {
+    if (!idIsValid) return;
+    setLoadingStructured(true);
+    try {
+      const res = await axios.get(
+        `${NEXT_PUBLIC_API_BASE}/api/v1/structuredreviews/findStructuredReviewsBySongId`,
+        { params: { songId: id }, headers: authHeaders }
+      );
+      setStructuredReviews(res.data?.data?.structuredReviews || []);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoadingStructured(false);
+    }
+  }, [id, idIsValid, authHeaders]);
+
+  useEffect(() => {
+    loadStructuredReviews();
+  }, [loadStructuredReviews]);
+
+  // A user can only submit one structured review per song (unique
+  // constraint on the backend, no update endpoint) — so once they have
+  // one, show it instead of the form.
+  const myStructuredReview = useMemo(
+    () => (user ? structuredReviews.find((r) => r.userId === user.id) : undefined),
+    [structuredReviews, user]
+  );
+
+  const structuredAverages = useMemo(() => {
+    if (structuredReviews.length === 0) return null;
+    const sum = structuredReviews.reduce(
+      (acc, r) => ({
+        melody: acc.melody + r.melody,
+        rhythm: acc.rhythm + r.rhythm,
+        pitch: acc.pitch + r.pitch,
+        voice: acc.voice + r.voice,
+      }),
+      { melody: 0, rhythm: 0, pitch: 0, voice: 0 }
+    );
+    const n = structuredReviews.length;
+    return {
+      melody: sum.melody / n,
+      rhythm: sum.rhythm / n,
+      pitch: sum.pitch / n,
+      voice: sum.voice / n,
+    };
+  }, [structuredReviews]);
+
+  const handleSubmitStructuredReview = async () => {
+    if (!user || !idIsValid) return;
+
+    setStructuredSubmitError(null);
+    setSubmittingStructured(true);
+    try {
+      await axios.post(
+        `${NEXT_PUBLIC_API_BASE}/api/v1/structuredreviews/createStructuredReview`,
+        { songId: id, userId: user.id, melody, rhythm, pitch, voice },
+        { headers: authHeaders }
+      );
+      await loadStructuredReviews();
+    } catch (err) {
+      console.log(err);
+      setStructuredSubmitError(
+        err.response?.data?.message || "Couldn't submit your rating. Try again."
+      );
+    } finally {
+      setSubmittingStructured(false);
+    }
+  };
+
   // Fetch comments
   const loadComments = useCallback(async () => {
     if (!idIsValid) return;
@@ -300,7 +417,7 @@ export default function SongDetailPage() {
     setCommentsError(null);
     try {
       const res = await axios.get(
-        `${NEXT_PUBLIC_API_BASE}/api/v1/songreviews/findSongReviewsBySongId`,
+        `${API_BASE}/api/v1/songreviews/findSongReviewsBySongId`,
         { params: { song_id: id }, headers: authHeaders }
       );
       const list = res.data?.data?.songReviews || [];
@@ -333,7 +450,7 @@ export default function SongDetailPage() {
     setPosting(true);
     try {
       await axios.post(
-        `${NEXT_PUBLIC_API_BASE}/api/v1/songreviews/createSongReview`,
+        `${API_BASE}/api/v1/songreviews/createSongReview`,
         {
           user_id: user.id,
           song_id: id,
@@ -492,6 +609,82 @@ export default function SongDetailPage() {
                 )}
                 {playbackError && (
                   <p className="text-xs text-[#8B8FA0]">{playbackError}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Structured review card */}
+            <div className="bg-[#1B1D26] rounded-2xl p-5 sm:p-8 border border-[#272A35] space-y-6">
+              <div>
+                <h2 className="font-display text-lg font-semibold">Structured Rating</h2>
+                <p className="text-xs text-[#8B8FA0] mt-1">
+                  Rate melody, rhythm, pitch, and voice from 0–100. Optional — you can also just leave a comment below, or both.
+                </p>
+              </div>
+
+              {/* Community averages */}
+              <div>
+                <p className="text-[10px] uppercase tracking-widest text-[#5B5F6E] mb-3">
+                  Community average
+                  {structuredReviews.length > 0 &&
+                    ` · ${structuredReviews.length} rating${structuredReviews.length === 1 ? "" : "s"}`}
+                </p>
+
+                {loadingStructured ? (
+                  <p className="text-xs text-[#5B5F6E]">Loading ratings...</p>
+                ) : structuredAverages ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                    <ScoreBar label="Melody" value={structuredAverages.melody} />
+                    <ScoreBar label="Rhythm" value={structuredAverages.rhythm} />
+                    <ScoreBar label="Pitch" value={structuredAverages.pitch} />
+                    <ScoreBar label="Voice" value={structuredAverages.voice} />
+                  </div>
+                ) : (
+                  <p className="text-xs text-[#5B5F6E]">No ratings yet — be the first to rate this song.</p>
+                )}
+              </div>
+
+              {/* Your rating: form, or your submitted scores */}
+              <div className="border-t border-[#272A35] pt-5">
+                {!user ? (
+                  <p className="text-sm text-[#8B8FA0]">Log in to rate this song.</p>
+                ) : myStructuredReview ? (
+                  <div>
+                    <p className="text-[10px] uppercase tracking-widest text-[#5B5F6E] mb-3">
+                      Your rating
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
+                      <ScoreBar label="Melody" value={myStructuredReview.melody} />
+                      <ScoreBar label="Rhythm" value={myStructuredReview.rhythm} />
+                      <ScoreBar label="Pitch" value={myStructuredReview.pitch} />
+                      <ScoreBar label="Voice" value={myStructuredReview.voice} />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-5">
+                    <p className="text-[10px] uppercase tracking-widest text-[#5B5F6E]">
+                      Your rating
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-5">
+                      <ScoreSlider label="Melody" value={melody} onChange={setMelody} />
+                      <ScoreSlider label="Rhythm" value={rhythm} onChange={setRhythm} />
+                      <ScoreSlider label="Pitch" value={pitch} onChange={setPitch} />
+                      <ScoreSlider label="Voice" value={voice} onChange={setVoice} />
+                    </div>
+
+                    <div className="flex items-center justify-between gap-3 flex-wrap">
+                      {structuredSubmitError && (
+                        <p className="text-xs text-[#E3A542]">{structuredSubmitError}</p>
+                      )}
+                      <button
+                        onClick={handleSubmitStructuredReview}
+                        disabled={submittingStructured}
+                        className="focus-ring ml-auto px-5 py-2 bg-[#E3A542] text-[#121319] text-xs font-semibold rounded-full hover:brightness-110 transition disabled:opacity-50"
+                      >
+                        {submittingStructured ? "Submitting..." : "Submit Rating"}
+                      </button>
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
