@@ -6,4 +6,4 @@ function Collaboration() {
     );
 }
 
-export default Contact
+export default Collaboration
