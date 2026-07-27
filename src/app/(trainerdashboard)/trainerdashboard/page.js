@@ -5,6 +5,66 @@ import { useTrainerAuth } from "@/app/context/TrainerAuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
+function MicIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
+      <path d="M12 15a3 3 0 003-3V6a3 3 0 10-6 0v6a3 3 0 003 3z" />
+      <path d="M17 11a1 1 0 10-2 0 3 3 0 01-6 0 1 1 0 10-2 0 5 5 0 004 4.9V18H9a1 1 0 100 2h6a1 1 0 100-2h-2v-2.1A5 5 0 0017 11z" />
+    </svg>
+  );
+}
+
+function LogoutIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M16 17l5-5-5-5" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M21 12H9" />
+    </svg>
+  );
+}
+
+function UserIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-8 h-8 text-white/90" fill="currentColor">
+      <circle cx="12" cy="8" r="4" />
+      <path d="M4 20c0-4.4 3.6-8 8-8s8 3.6 8 8v1H4v-1z" />
+    </svg>
+  );
+}
+
+// Shared glossy 3D pill-button style used for both actions.
+function GlossyButton({ onClick, gradient, icon, children, className = "" }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        group relative inline-flex items-center gap-2.5
+        px-7 py-3.5 rounded-2xl
+        font-bold text-sm tracking-wide text-white
+        cursor-pointer select-none
+        transition-transform duration-150
+        active:translate-y-0.5 active:shadow-inner
+        ${gradient}
+        ${className}
+      `}
+      style={{
+        boxShadow:
+          "0 1px 0 rgba(255,255,255,0.35) inset, 0 -3px 6px rgba(0,0,0,0.25) inset, 0 10px 20px -6px rgba(0,0,0,0.45)",
+      }}
+    >
+      <span
+        className="pointer-events-none absolute inset-x-1 top-1 h-1/3 rounded-xl bg-white/25 blur-[2px]"
+        aria-hidden="true"
+      />
+      <span className="relative flex items-center gap-2.5">
+        {icon}
+        {children}
+      </span>
+    </button>
+  );
+}
+
 export default function TrainerDashboard() {
     const {  trainer, loading, logout: authLogout } = useTrainerAuth();
     const router = useRouter();
