@@ -217,7 +217,7 @@ export default function Home() {
                             <button
                                 className="cta-btn bg-purple-700 text-white px-10 py-3 rounded-full font-semibold font-body text-base hover:bg-white hover:text-purple-700 border-2 border-purple-700"
                                 onClick={() => {
-                                    router.push("/Register");
+                                    router.push("/RegisterUserOrTrainer");
                                 }}
                             >
                                 REGISTER
@@ -228,7 +228,7 @@ export default function Home() {
                                 font-semibold font-body text-base border-2 border-purple-700
                                 hover:bg-purple-700 hover:text-white"
                                 onClick={() => {
-                                    router.push("/Login");
+                                    router.push("/LoginUserOrTrainer");
                                 }}
                             >
                                 LOGIN
@@ -322,7 +322,7 @@ export default function Home() {
                             rounded-full font-semibold font-body text-base border-2 border-purple-700
                             hover:bg-white hover:text-purple-700"
                             onClick={() => {
-                                router.push("/Login");
+                                router.push("/LoginUserOrTrainer");
                             }}
                         >
                             EXPLORE SONGS
@@ -351,7 +351,7 @@ export default function Home() {
                             rounded-full font-semibold font-body text-base border-2 border-purple-700
                             hover:bg-white hover:text-purple-700"
                             onClick={() => {
-                                router.push("/Login");
+                                router.push("/LoginUserOrTrainer");
                             }}
                         >
                             FIND COURSES

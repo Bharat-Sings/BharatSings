@@ -150,7 +150,7 @@ function Navbar() {
                         })}
                         <li className="pt-4 border-t border-gray-100">
                             <Link
-                                href="/Register"
+                                href="/RegisterUserOrTrainer"
                                 onClick={() => setIsOpen(false)}
                                 className="block w-full bg-purple-700 text-white font-bold rounded-full py-3 text-center text-xl hover:bg-purple-800 transition-colors"
                             >
