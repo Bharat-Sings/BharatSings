@@ -3,6 +3,7 @@
 import React from "react";
 import { useTrainerAuth } from "@/app/context/TrainerAuthContext";
 import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function TrainerDashboard() {
     const {  trainer, loading, logout: authLogout } = useTrainerAuth();
