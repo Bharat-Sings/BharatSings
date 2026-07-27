@@ -95,7 +95,7 @@ function Navbar() {
                 {/* Desktop "Get Started" Button (hidden on mobile) */}
                 <div className="hidden md:block">
                     <Link
-                        href="/Register"
+                        href="/RegisterUserOrTrainer"
                         className="inline-flex items-center justify-center bg-white text-purple-700 font-bold rounded-[41px] p-2 w-40 text-xl lg:text-2xl border-2 border-purple-700 hover:bg-purple-700 hover:text-white transition-colors"
                     >
                         Get Started
