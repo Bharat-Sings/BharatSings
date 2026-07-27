@@ -231,8 +231,11 @@ model subscription_plan {
 model Trainer {
   id              Int              @id @default(autoincrement())
   name            String
+  email           String           @unique
+  password        String
   description     String
   category        String
+  user_role       String
   is_active       Boolean          @default(true)
   live_sessions   live_session[]
   courses         course[]

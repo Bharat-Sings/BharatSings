@@ -9,12 +9,12 @@ export const comparePassword = async (password, hash) => {
   return await bcrypt.compare(password, hash);
 };
 
-export const generateAccessToken = (user) => {
+export const generateAccessToken = (account) => {
   return jwt.sign(
     {
-      userId: user.id,
-      email: user.email,
-      role: user.user_role,
+      userId: account.id,
+      email: account.email,
+      role: account.user_role,
     },
     process.env.ACCESS_TOKEN_SECRET,
     {
@@ -23,10 +23,10 @@ export const generateAccessToken = (user) => {
   );
 };
 
-export const generateRefreshToken = (user) => {
+export const generateRefreshToken = (account) => {
   return jwt.sign(
     {
-      userId: user.id,
+      userId: account.id,
     },
     process.env.REFRESH_TOKEN_SECRET,
     {
