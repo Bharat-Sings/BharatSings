@@ -3,7 +3,7 @@
 import React from "react";
 // Using lucide-react for UI icons
 import { Mail, Lock, LogIn } from "lucide-react";
-import { useAuth } from "@/app/context/AuthContext";
+import { useTrainerAuth } from "@/app/context/TrainerAuthContext";
 import { useRouter } from "next/navigation";
 
 function LoginTrainer() {
@@ -14,7 +14,7 @@ function LoginTrainer() {
 
   const router = useRouter();
 
-  const { login } = useAuth();
+  const { login } = useTrainerAuth();
 
   const NEXT_PUBLIC_API_BASE = process.env.NEXT_PUBLIC_BACKEND_URI;
 
@@ -22,7 +22,7 @@ function LoginTrainer() {
     e.preventDefault();
     // Handle login verification logic here
     try {
-      const response = await fetch(`${NEXT_PUBLIC_API_BASE}/api/v1/users/login`, {
+      const response = await fetch(`${NEXT_PUBLIC_API_BASE}/api/v1/trainers/loginTrainer`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -41,8 +41,8 @@ function LoginTrainer() {
         return;
       }
 
-      login(data.user, data.accessToken);
-      router.push("/dashboard");
+      login(data.trainer, data.accessToken);
+      router.push("/trainerDashboard");
     } catch (err) {
       console.log(err);
     }
