@@ -21,18 +21,18 @@ function RegisterTrainer() {
     e.preventDefault();
 
     try {
-      const response = await fetch(`${NEXT_PUBLIC_API_BASE}/api/v1/users/register`, {
+      const response = await fetch(`${NEXT_PUBLIC_API_BASE}/api/v1/trainers/registerTrainer`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         credentials: "include",
         body: JSON.stringify({
+          name: displayName,
           email,
           password,
-          display_name: displayName,
-          description,
           category,
+          description,
         }),
       });
 
@@ -43,9 +43,9 @@ function RegisterTrainer() {
         return;
       }
 
-      login(data.user, data.accessToken);
+      login(data.trainer, data.accessToken);
 
-      router.push("/dashboard");
+      router.push("/trainerdashboard");
     } catch (err) {
       console.error(err);
     }
