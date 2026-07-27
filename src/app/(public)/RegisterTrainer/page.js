@@ -3,7 +3,7 @@
 import React from "react";
 import { UserPlus, Mail, Lock, FileText, Tag } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/app/context/AuthContext";
+import { useTrainerAuth } from "@/app/context/AuthContext";
 
 function RegisterTrainer() {
   const [displayName, setDisplayName] = React.useState("");
@@ -13,7 +13,7 @@ function RegisterTrainer() {
   const [category, setCategory] = React.useState("");
 
   const router = useRouter();
-  const { login } = useAuth();
+  const { login } = useTrainerAuth();
 
   const NEXT_PUBLIC_API_BASE = process.env.NEXT_PUBLIC_BACKEND_URI;
 
