@@ -4,6 +4,7 @@ import React from "react";
 import { useTrainerAuth } from "@/app/context/TrainerAuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import axios from "axios";
 
 function MicIcon() {
   return (
