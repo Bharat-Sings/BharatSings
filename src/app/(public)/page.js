@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
-import Navbar from "../Components/Navbar";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
@@ -172,8 +171,6 @@ export default function Home() {
                     .cta-btn:hover, .feature-card:hover { transform: none !important; }
                 }
             `}</style>
-
-            <Navbar />
 
             {/* HERO */}
             <section className="relative max-w-7xl mx-auto px-6 lg:px-16 pt-14 pb-20 lg:pt-20 lg:pb-28">
