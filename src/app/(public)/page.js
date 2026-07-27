@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useAuth } from "../context/AuthContext";
+import { useTrainerAuth } from "../context/TrainerAuthContext";
 
 import landingPageTopSection from "../Images/landingPageTopSection.png";
 import landingPageSinger from "../Images/landingPageSinger.jpg";
@@ -96,14 +97,17 @@ function Reveal({ children, className = "", delay = 0 }) {
 export default function Home() {
     const router = useRouter();
     const { user, loading } = useAuth();
+    const { trainer, loading: trainerLoading } = useTrainerAuth();
     const [heroLoaded, setHeroLoaded] = useState(false);
 
     useEffect(() => {
-        if (loading) return;
+        if (loading || trainerLoading) return;
         if (user) {
             router.replace("/dashboard");
+        } else if (trainer) {
+            router.replace("/trainerdashboard");
         }
-    }, [user, loading, router]);
+    }, [user, loading, trainerLoading, trainer, router]);
 
     useEffect(() => {
         // Trigger the hero's entrance sequence shortly after mount.
@@ -111,7 +115,7 @@ export default function Home() {
         return () => clearTimeout(t);
     }, []);
 
-    if (loading) {
+    if (loading || trainerLoading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#FBF9F6]">
                 <h1 className="text-lg font-medium text-[#6b21a8]">Loading...</h1>
