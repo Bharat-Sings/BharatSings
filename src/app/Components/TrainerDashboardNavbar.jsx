@@ -1,6 +1,8 @@
+"use client";
+
 import React from "react";
 
-export default function TrainerDashboard() {
+export default function TrainerDashboardNavbar() {
     return (
         <div className=""></div>
     );

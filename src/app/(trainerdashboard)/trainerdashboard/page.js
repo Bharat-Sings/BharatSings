@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import { useTrainerAuth } from "@/app/context/TrainerAuthContext";
 import { useRouter } from "next/navigation";

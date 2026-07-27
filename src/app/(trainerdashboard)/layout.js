@@ -1,6 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
-import DashboardNavbar from "../Components/DashboardNavbar";
+import TrainerDashboardNavbar from "../Components/TrainerDashboardNavbar";
 import { AuthProvider } from "../context/AuthContext";
 
 const geistSans = Geist({
@@ -31,7 +31,7 @@ export default function RootLayout({ children }) {
       <body className="flex flex-col md:flex-row h-screen w-screen overflow-hidden bg-white">
         <AuthProvider>
           {/* Sidebar navigation component */}
-          <DashboardNavbar />
+          <TrainerDashboardNavbar />
 
           {/* 
             Main content window:
