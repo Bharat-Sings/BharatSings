@@ -93,7 +93,7 @@ export default function TrainerDashboard() {
     const logout = async () => {
         try {
         await axios.post(
-            `${NEXT_PUBLIC_API_BASE}/api/v1/trainers/logout`,
+            `${NEXT_PUBLIC_API_BASE}/api/v1/trainers/logoutTrainer`,
             {},
             { withCredentials: true }
         );
