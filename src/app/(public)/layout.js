@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "../globals.css";
 import Navbar from "../Components/Navbar";
 import { AuthProvider } from "../context/AuthContext";
+import { TrainerAuthProvider } from "../context/TrainerAuthContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,8 +27,10 @@ export default function RootLayout({ children }) {
     >
       <body className="min-h-full flex flex-col">
         <AuthProvider>
-          <Navbar />
-          <main>{children}</main>
+          <TrainerAuthProvider>
+            <Navbar />
+            <main>{children}</main>
+          </TrainerAuthProvider>
         </AuthProvider>
       </body>
     </html>
