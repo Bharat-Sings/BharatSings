@@ -112,7 +112,7 @@ const loginTrainer = async (req, res, next) => {
             throw new ApiError(401, "Invalid Credentials");
         }
 
-        if (!user.is_active) {
+        if (!trainer.is_active) {
 
             return res.status(403).json({
                 message: "Account disabled",

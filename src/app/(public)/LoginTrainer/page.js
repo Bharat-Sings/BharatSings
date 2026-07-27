@@ -42,7 +42,7 @@ function LoginTrainer() {
       }
 
       login(data.trainer, data.accessToken);
-      router.push("/trainerDashboard");
+      router.push("/trainerdashboard");
     } catch (err) {
       console.log(err);
     }
