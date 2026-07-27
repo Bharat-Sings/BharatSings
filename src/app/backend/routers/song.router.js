@@ -4,7 +4,8 @@ import {
     findSongs,
     findSongsByGenreId,
     findSongsByTitle,
-    findSongById
+    findSongById,
+    findSongsByUserId
 } from "../controllers/song.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 
@@ -15,5 +16,6 @@ router.route("/findSongs").get(findSongs);
 router.route("/findSongsByGenreId").get(findSongsByGenreId);
 router.route("/findSongsByTitle").get(findSongsByTitle);
 router.route("/findSongById").get(findSongById);
+router.route("/findSongsByUserId").get(findSongsByUserId);
 
 export { router as songRouter }

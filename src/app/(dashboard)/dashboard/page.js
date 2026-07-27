@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -68,6 +68,7 @@ function GlossyButton({ onClick, gradient, icon, children, className = "" }) {
 function Dashboard() {
   const { user, loading, logout: authLogout } = useAuth();
   const router = useRouter();
+  const [recentSongs, setRecentSongs] = useState([]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -107,6 +108,25 @@ function Dashboard() {
       console.log("Logout Error:", error);
     }
   };
+
+  const findRecentSongs = async () => {
+    try {
+      const response = await axios.get(
+        `${NEXT_PUBLIC_API_BASE}/api/v1/songs/findSongsByUserId`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+          withCredentials: true,
+        },
+      );
+
+      const songs = await response.data?.data?.songs;
+      setRecentSongs(songs);
+    } catch (err) {
+      console.log(err);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#F4F5F7] p-4 sm:p-8">

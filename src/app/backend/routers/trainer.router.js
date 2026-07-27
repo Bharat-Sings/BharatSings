@@ -9,7 +9,7 @@ import {
     findTrainersByCategory,
     findTrainersByName
 } from "../controllers/trainer.controller.js";
-import trainerAuthMiddleware from "../middlewares/trainerAuth.middleware.js";
+import trainerAuthMiddleware from "../middlewares/trainerauth.middleware.js";
 
 const router = Router();
 

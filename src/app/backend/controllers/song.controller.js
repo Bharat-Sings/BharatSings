@@ -64,6 +64,32 @@ const createSong = asyncHandler(async (req, res) => {
     );
 });
 
+const findSongsByUserId = asyncHandler(async(req, res) => {
+    const userId = req.user.id;
+
+    if (!userId) {
+        throw new ApiError(400, "User Id undefined");
+    }
+
+    const songs = await prisma.song.findMany({
+        where: {
+            userId
+        }
+    })
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                songs: songs
+            },
+            "Successfully Found Songs"
+        )
+    )
+});
+
 const findSongs = asyncHandler(async (req, res) => {
     const songs = await prisma.song.findMany({
         include: {
@@ -214,5 +240,6 @@ export {
     findSongs,
     findSongsByGenreId,
     findSongsByTitle,
-    findSongById
+    findSongById,
+    findSongsByUserId
 }
