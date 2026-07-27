@@ -3,7 +3,7 @@
 import React from "react";
 import { UserPlus, Mail, Lock, FileText, Tag } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useTrainerAuth } from "@/app/context/AuthContext";
+import { useTrainerAuth } from "@/app/context/TrainerAuthContext";
 
 function RegisterTrainer() {
   const [displayName, setDisplayName] = React.useState("");
