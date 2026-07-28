@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 export default function MyCourses() {
     let [courses, setCourses] = useState([]);
 
-    const { trainer, loading } = useTrainerAuth();
+    const { trainer, accessToken, loading } = useTrainerAuth();
 
     const router = useRouter();
 
@@ -23,7 +23,12 @@ export default function MyCourses() {
     const findMyCourses = async () => {
         try {
             const response = await axios.get(
-                `${API_BASE}/api/v1/courses/findCoursesByTrainerId`
+                `${API_BASE}/api/v1/courses/findCoursesByTrainerId`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    }
+                }
             );
 
             setCourses(response.data.data.courses);
