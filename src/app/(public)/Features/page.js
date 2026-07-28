@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import featuresPageHeroSection from "../../Images/featuresPageHeroSection.png";
 import Image from "next/image";
