@@ -149,6 +149,7 @@ model course {
   //is_published   Boolean
   created_at         DateTime        @default(now())
   updated_at         DateTime        @updatedAt
+  is_published       Boolean         @default(false)
   //certificate_id Int
   course_reviews     course_review[]
   enrollments        enrollment[]

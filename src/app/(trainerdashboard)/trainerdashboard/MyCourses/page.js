@@ -18,23 +18,15 @@ export default function MyCourses() {
         }
     }, [trainer, loading, router]);
 
-    if (loading) {
-        return (
-        <div className="min-h-screen flex items-center justify-center bg-[#F4F5F7]">
-            <h1 className="text-lg font-semibold text-gray-500">Loading....</h1>
-        </div>
-        );
-    }
-
     const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URI;
 
     const findMyCourses = async () => {
         try {
-            const courses = await axios.get(
+            const response = await axios.get(
                 `${API_BASE}/api/v1/courses/findCoursesByTrainerId`
             );
 
-            setCourses(courses.data.data.courses);
+            setCourses(response.data.data.courses);
         } catch (err) {
             console.log(err);
         }
@@ -45,6 +37,15 @@ export default function MyCourses() {
             findMyCourses();
         }
     }, [loading, trainer]);
+
+
+    if (loading) {
+        return (
+        <div className="min-h-screen flex items-center justify-center bg-[#F4F5F7]">
+            <h1 className="text-lg font-semibold text-gray-500">Loading....</h1>
+        </div>
+        );
+    }
 
     return (
         <div className = "">
