@@ -50,14 +50,6 @@ export default function CoursesPage() {
     }
   }, [loading, user]);
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F4F5F7]">
-        <h1 className="text-lg font-semibold text-gray-500">Loading....</h1>
-      </div>
-    );
-  }
-
   const filtered = useMemo(() => {
       const q = query.trim().toLowerCase();
 
@@ -73,6 +65,14 @@ export default function CoursesPage() {
           return matchesCategory && matchesQuery;
       });
   }, [courses, query, category]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F4F5F7]">
+        <h1 className="text-lg font-semibold text-gray-500">Loading....</h1>
+      </div>
+    );
+  }
 
   return (
     <div
