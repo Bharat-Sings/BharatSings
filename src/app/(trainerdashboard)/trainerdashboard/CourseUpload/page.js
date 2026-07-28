@@ -115,36 +115,6 @@ export default function CourseUpload() {
     // delete the orphaned course. Covers both in-app unmount (back button,
     // navigating away) and closing/refreshing the tab (best-effort only —
     // browsers don't guarantee async requests finish on unload).
-    const deleteUnpublishedCourse = useCallback(
-        (idOverride) => {
-            const idToDelete = idOverride ?? courseIdRef.current;
-            if (!idToDelete || publishedRef.current) return;
-            axios.delete(`${API_BASE}/api/v1/courses/deleteCourse`, {
-                data: {
-                    courseId: idToDelete,
-                },
-                headers: {
-                    Authorization: `Bearer ${accessToken}`,
-                },
-            });
-        },
-        [API_BASE, accessToken]
-    );
-
-    useEffect(() => {
-        function handleBeforeUnload() {
-            deleteUnpublishedCourse();
-        }
-        window.addEventListener("beforeunload", handleBeforeUnload);
-
-        return () => {
-            window.removeEventListener("beforeunload", handleBeforeUnload);
-            // Component unmounting inside the app (e.g. route change) —
-            // clean up here too.
-            deleteUnpublishedCourse();
-        };
-    }, [deleteUnpublishedCourse]);
-
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-[#0B0B10]">
@@ -306,12 +276,16 @@ export default function CourseUpload() {
 
             if (!updatedCourse.data?.data?.updatedCourse?.is_published) {
                 alert("Error Publishing Course!");
-                return;
+                return false;
             }
+
+            return true;
         } catch (err) {
             console.log(err);
+            alert("Error Publishing Course!");
+            return false;
         }
-    }
+    };
 
     const uploadAllPending = async () => {
         const toUpload = videos.filter((v) => v.status === "idle" && v.file);
@@ -319,31 +293,46 @@ export default function CourseUpload() {
     };
 
     // --- Publish ---
-    const handlePublish = () => {
+    const handlePublish = async () => {
+        const uploadedCount = videos.filter(
+            (video) => video.status === "done"
+        ).length;
+
         if (uploadedCount < MIN_VIDEOS_TO_PUBLISH) {
-            alert(
-                `Please upload at least ${MIN_VIDEOS_TO_PUBLISH} videos before publishing. You've uploaded ${uploadedCount} so far.`
-            );
+            alert(`Please upload at least ${MIN_VIDEOS_TO_PUBLISH} videos.`);
+            return;
+        }
+
+        if (uploadedCount > MAX_VIDEOS) {
+            alert(`Maximum ${MAX_VIDEOS} videos are allowed.`);
             return;
         }
 
         setPublishing(true);
-        setPublished(true); // stops the exit-cleanup delete from firing
 
-        alert("Course published successfully!");
+        try {
+            const success = await publishCourse();
 
-        // Reset everything so the trainer can create another course.
-        setTitle("");
-        setDescription("");
-        setCategory("");
-        setPrice("");
-        setLanguage("");
-        setPaytmPhoneNumber("");
-        setCourseId(null);
-        setVideos([emptyVideoSlot()]);
-        setCourseError(null);
-        setPublishing(false);
-        setPublished(false);
+            if (!success) return;
+
+            setPublished(true);
+
+            alert("Course published successfully!");
+
+            // Reset form
+            setTitle("");
+            setDescription("");
+            setCategory("");
+            setPrice("");
+            setLanguage("");
+            setPaytmPhoneNumber("");
+            setCourseId(null);
+            setVideos([emptyVideoSlot()]);
+            setCourseError(null);
+
+        } finally {
+            setPublishing(false);
+        }
     };
 
     return (
