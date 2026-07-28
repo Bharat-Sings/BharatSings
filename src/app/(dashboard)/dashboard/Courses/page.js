@@ -32,6 +32,24 @@ export default function CoursesPage() {
     }
   }, [user, loading, router]);
 
+  const getCourses = async () => {
+    try {
+      const foundCourses = await axios.get(
+        `${API_BASE}/api/v1/courses/findCourses`
+      );
+
+      setCourses(foundCourses.data.data.courses);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  useEffect(() => {
+    if (!loading && user) {
+      getCourses();
+    }
+  }, [loading, user]);
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#F4F5F7]">
@@ -55,24 +73,6 @@ export default function CoursesPage() {
           return matchesCategory && matchesQuery;
       });
   }, [courses, query, category]);
-
-  const getCourses = async () => {
-    try {
-      const foundCourses = await axios.get(
-        `${API_BASE}/api/v1/courses/findCourses`
-      );
-
-      setCourses(foundCourses.data.data.courses);
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
-  useEffect(() => {
-    if (!loading && user) {
-      getCourses();
-    }
-  }, [loading, user]);
 
   return (
     <div
