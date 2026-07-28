@@ -1,5 +1,4 @@
 import React from "react";
-import Navbar from "../../Components/Navbar";
 import featuresPageHeroSection from "../../Images/featuresPageHeroSection.png";
 import Image from "next/image";
 
@@ -49,9 +48,6 @@ function Features() {
 
     return (
         <div className="bg-slate-50 min-h-screen w-full overflow-x-hidden antialiased text-slate-800">
-            {/* Navbar (Included based on your import statement) */}
-            <Navbar />
-
             {/* Hero Header Section */}
             <div className="relative w-full overflow-hidden bg-slate-900 aspect-[16/6] max-h-[500px]">
                 <Image 
