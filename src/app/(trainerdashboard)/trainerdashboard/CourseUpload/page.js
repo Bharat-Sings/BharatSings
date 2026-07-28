@@ -295,6 +295,24 @@ export default function CourseUpload() {
         [API_BASE]
     );
 
+    const publishCourse = async () => {
+        try {
+            const updatedCourse = await axios.patch(
+                `${API_BASE}/api/v1/courses/publishCourse`,
+                {
+                    course_id: courseId
+                }
+            );
+
+            if (!updatedCourse.data?.data?.updatedCourse?.is_published) {
+                alert("Error Publishing Course!");
+                return;
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
     const uploadAllPending = async () => {
         const toUpload = videos.filter((v) => v.status === "idle" && v.file);
         await Promise.all(toUpload.map((v) => uploadOneVideo(v)));

@@ -6,7 +6,8 @@ import {
     findCoursesByCategory,
     findCoursesByLanguage,
     findCoursesByTrainerId,
-    deleteCourse
+    deleteCourse,
+    publishCourse
 } from "../controllers/course.controller.js";
 import trainerAuthMiddleware from "../middlewares/trainerauth.middleware.js";
 
@@ -18,5 +19,6 @@ router.route("/findCoursesByCategory").get(findCoursesByCategory);
 router.route("/findCoursesByLanguage").get(findCoursesByLanguage);
 router.route("/findCoursesByTrainerId").get(findCoursesByTrainerId);
 router.route("/deleteCourse").delete(trainerAuthMiddleware, deleteCourse);
+router.route("/publishCourse").patch(publishCourse);
 
 export { router as courseRouter }

@@ -55,7 +55,14 @@ const createCourse = asyncHandler(async(req, res) => {
 });
 
 const findCourses = asyncHandler(async(req, res) => {
-    const courses = await prisma.course.findMany();
+    const courses = await prisma.course.findMany({
+        where: {
+            is_published: true,
+        },
+        include: {
+            language: true,
+        },
+    });
 
     if (!courses) {
         throw new ApiError(500, "Error finding courses");
@@ -165,16 +172,17 @@ const findCoursesByLanguage = asyncHandler(async(req, res) => {
 });
 
 const findCoursesByTrainerId = asyncHandler(async(req, res) => {
-    let { trainer_id } = req.query;
+    const trainer_id = req.trainer.id;
 
     if (!trainer_id) {
-        throw new ApiError(400, "Trainer Id undefined");
+        throw new ApiError(401, "Unauthorized Request");
     }
 
     const courses = await prisma.course.findMany({
         where: {
-            trainer_id: trainer_id
-        }
+            trainer_id: trainer_id,
+            is_published: true,
+        },
     });
 
     if (!courses) {
@@ -234,6 +242,49 @@ const deleteCourse = asyncHandler(async(req, res) => {
     );
 });
 
+const publishCourse = asyncHandler(async(req, res) => {
+    const { course_id } = req.body;
+
+    if (!course_id) {
+        throw new ApiError(400, "Course Id Undefined");
+    }
+
+    const course = await prisma.course.findUnique({
+        where: {
+            id: course_id
+        }
+    });
+
+    if (!course) {
+        throw new ApiError(404, "Course Not Found");
+    }
+
+    const updatedCourse = await prisma.course.update({
+        where: {
+            id: course_id
+        },
+        data: {
+            is_published: true
+        }
+    });
+
+    if (!updatedCourse) {
+        throw new ApiError(500, "Error Publishing Course");
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                updatedCourse: updatedCourse
+            },
+            "Successfully Published Course"
+        )
+    );
+});
+
 export {
     createCourse,
     findCourses,
@@ -241,5 +292,6 @@ export {
     findCoursesByCategory,
     findCoursesByLanguage,
     findCoursesByTrainerId,
-    deleteCourse
+    deleteCourse,
+    publishCourse
 }

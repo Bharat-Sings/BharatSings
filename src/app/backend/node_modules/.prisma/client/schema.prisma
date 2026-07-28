@@ -178,7 +178,7 @@ model lesson {
 model video {
   id          Int      @id @default(autoincrement())
   name        String
-  file_path   String
+  file_path   String   @unique
   duration    Int?
   //uploaded_by Int
   course_id   Int

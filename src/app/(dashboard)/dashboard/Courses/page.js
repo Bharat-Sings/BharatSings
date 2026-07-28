@@ -1,6 +1,9 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
+import axios from "axios";
+import { useAuth } from "@/app/context/AuthContext";
+import { useRouter } from "next/navigation";
 
 const CATEGORIES = [
   { id: "All", label: "All", icon: "▦" },
@@ -12,151 +15,64 @@ const CATEGORIES = [
   { id: "Mixing & Mastering", label: "Mixing & Mastering", icon: "🎚️" },
 ];
 
-const COURSES = [
-  {
-    id: 1,
-    title: "Electronic Music Production Masterclass",
-    instructor: "Alex Rivers",
-    rating: 4.8,
-    reviews: 520,
-    desc: "Learn synthesizing, beat-making, arrangement, and mixing from the ground up.",
-    modules: 15,
-    hours: 40,
-    category: "Production",
-    img: "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: 2,
-    title: "Vocal Techniques & Artistry",
-    instructor: "Sarah Chen",
-    rating: 4.9,
-    reviews: 310,
-    desc: "Develop your voice, breathing, pitch control, and stage presence.",
-    modules: 10,
-    hours: 25,
-    category: "Vocals",
-    img: "https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: 3,
-    title: "Beginner to Advanced Guitar",
-    instructor: "Mike Davidson",
-    rating: 4.6,
-    reviews: 280,
-    desc: "Master chords, scales, solos, and songwriting on guitar.",
-    modules: 18,
-    hours: 55,
-    category: "Instruments",
-    img: "https://images.unsplash.com/photo-1525201548942-d8732f6617a0?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: 4,
-    title: "Music Theory Fundamentals",
-    instructor: "Dr. Elena Petrova",
-    rating: 4.9,
-    reviews: 410,
-    desc: "Understand notes, rhythms, harmony, and how to apply them.",
-    modules: 12,
-    hours: 30,
-    category: "Composition",
-    img: "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: 5,
-    title: "Music Business Essentials",
-    instructor: "Jordan Blake",
-    rating: 4.7,
-    reviews: 190,
-    desc: "Contracts, royalties, marketing, and launching an independent career.",
-    modules: 14,
-    hours: 35,
-    category: "Business",
-    img: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: 6,
-    title: "Mixing & Mastering Bootcamp",
-    instructor: "Priya Nair",
-    rating: 4.8,
-    reviews: 260,
-    desc: "EQ, compression, loudness, and getting a final, polished mix.",
-    modules: 16,
-    hours: 45,
-    category: "Mixing & Mastering",
-    img: "https://images.unsplash.com/photo-1598653222000-6b7b7a552625?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: 7,
-    title: "Songwriting & Composition Lab",
-    instructor: "Marcus Webb",
-    rating: 4.7,
-    reviews: 150,
-    desc: "Melody, structure, lyrics, and arrangement for original songs.",
-    modules: 11,
-    hours: 28,
-    category: "Composition",
-    img: "https://images.unsplash.com/photo-1507838153414-b4b713384a76?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    id: 8,
-    title: "Advanced Synth Sound Design",
-    instructor: "Alex Rivers",
-    rating: 4.8,
-    reviews: 200,
-    desc: "Wavetables, modulation, and building your own signature patches.",
-    modules: 13,
-    hours: 32,
-    category: "Production",
-    img: "https://images.unsplash.com/photo-1571330735066-03aaa9429d89?auto=format&fit=crop&w=600&q=80",
-  },
-];
-
-const TRENDING = [COURSES[0], COURSES[2]];
-const NEW_RELEASES = [COURSES[1], COURSES[2]];
-const RECOMMENDED = [COURSES[0], COURSES[1], COURSES[3]];
-
-function Stars({ rating }) {
-  return (
-    <span className="inline-flex items-center gap-1 text-xs">
-      <span className="text-[#F5B942]" aria-hidden="true">★</span>
-      <span className="font-semibold text-white">{rating.toFixed(1)}</span>
-    </span>
-  );
-}
-
-function SidebarItem({ course }) {
-  return (
-    <div className="flex items-center gap-3 min-w-0">
-      <img
-        src={course.img}
-        alt={course.title}
-        className="w-11 h-11 rounded-lg object-cover shrink-0"
-      />
-      <div className="min-w-0">
-        <p className="text-xs font-semibold text-white leading-snug line-clamp-2">
-          {course.title}
-        </p>
-        <p className="text-[11px] text-gray-400 truncate">{course.instructor}</p>
-      </div>
-    </div>
-  );
-}
-
 export default function CoursesPage() {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("All");
+  const [courses, setCourses] = useState([]);
+
+  const { user, loading } = useAuth();
+  
+  const router = useRouter();
+
+  const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URI;
+
+  useEffect(() => {
+    if (!user && !loading) {
+      router.replace("/Login");
+    }
+  }, [user, loading, router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F4F5F7]">
+        <h1 className="text-lg font-semibold text-gray-500">Loading....</h1>
+      </div>
+    );
+  }
 
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    return COURSES.filter((c) => {
-      const matchesCategory = category === "All" || c.category === category;
-      const matchesQuery =
-        !q ||
-        c.title.toLowerCase().includes(q) ||
-        c.instructor.toLowerCase().includes(q);
-      return matchesCategory && matchesQuery;
-    });
-  }, [query, category]);
+      const q = query.trim().toLowerCase();
+
+      return courses.filter((course) => {
+          const matchesCategory =
+              category === "All" ||
+              course.category === category;
+
+          const matchesQuery =
+              !q ||
+              course.title.toLowerCase().includes(q);
+
+          return matchesCategory && matchesQuery;
+      });
+  }, [courses, query, category]);
+
+  const getCourses = async () => {
+    try {
+      const foundCourses = await axios.get(
+        `${API_BASE}/api/v1/courses/findCourses`
+      );
+
+      setCourses(foundCourses.data.data.courses);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  useEffect(() => {
+    if (!loading && user) {
+      getCourses();
+    }
+  }, [loading, user]);
 
   return (
     <div
@@ -211,103 +127,58 @@ export default function CoursesPage() {
         })}
       </div>
 
-      <div className="grid grid-cols-1 2xl:grid-cols-[1fr_280px] gap-8 items-start">
-        {/* Course grid */}
-        <div className="min-w-0">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            {filtered.map((course) => (
-              <div
-                key={course.id}
-                className="bg-[#171426]/80 border border-white/10 rounded-2xl overflow-hidden flex flex-col hover:border-white/25 transition-colors"
-              >
-                <img
-                  src={course.img}
-                  alt={course.title}
-                  className="w-full aspect-[4/3] object-cover"
-                />
+<div className="grid grid-cols-1 gap-8">
+  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+    {filtered.map((course) => (
+      <div
+        key={course.id}
+        className="bg-[#171426]/80 border border-white/10 rounded-2xl p-4 flex flex-col hover:border-white/25 transition-colors"
+      >
+        <h3 className="font-bold text-lg mb-2">
+          {course.title}
+        </h3>
 
-                <div className="p-4 flex flex-col flex-1">
-                  <h3 className="font-bold text-sm leading-snug mb-1 line-clamp-2 min-h-[2.5rem]">
-                    {course.title}
-                  </h3>
-                  <p className="text-xs text-gray-400 mb-1">{course.instructor}</p>
+        <p className="text-sm text-gray-400 mb-3 line-clamp-3">
+          {course.description}
+        </p>
 
-                  <div className="flex items-center gap-1.5 mb-2">
-                    <Stars rating={course.rating} />
-                    <span className="text-xs text-gray-400">
-                      ({course.reviews} reviews)
-                    </span>
-                  </div>
+        <p className="text-sm text-gray-500 mb-1">
+          Category: {course.category}
+        </p>
 
-                  <p className="text-xs text-gray-400 line-clamp-2 mb-3">
-                    {course.desc}
-                  </p>
+        <p className="text-sm text-gray-500 mb-1">
+          Language: {course.language.name}
+        </p>
 
-                  <p className="text-xs text-gray-500 mb-4 mt-auto">
-                    {course.modules} modules &middot; {course.hours} hours
-                  </p>
+        <p className="text-lg font-semibold text-green-400 mb-4">
+          ₹{course.price}
+        </p>
 
-                  <div className="flex items-center gap-2">
-                    <button className="flex-1 text-xs font-semibold border border-white/20 rounded-lg py-2 hover:bg-white/5 transition-colors">
-                      View details
-                    </button>
-                    <button
-                      className="flex-1 text-xs font-semibold rounded-lg py-2 text-white transition-transform hover:scale-[1.02]"
-                      style={{
-                        background: "linear-gradient(90deg, #8B6EF2, #6C4FE0)",
-                      }}
-                    >
-                      Enroll now
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+        <div className="flex gap-2 mt-auto">
+          <button className="flex-1 text-xs font-semibold border border-white/20 rounded-lg py-2 hover:bg-white/5">
+            View Details
+          </button>
 
-            {filtered.length === 0 && (
-              <p className="col-span-full text-sm text-gray-400 py-12 text-center">
-                No courses match your search.
-              </p>
-            )}
-          </div>
+          <button
+            className="flex-1 text-xs font-semibold rounded-lg py-2 text-white"
+            style={{
+              background: "linear-gradient(90deg, #8B6EF2, #6C4FE0)",
+            }}
+          >
+            Enroll
+          </button>
         </div>
-
-        {/* Sidebar */}
-        <aside className="space-y-6 2xl:sticky 2xl:top-8">
-          <div>
-            <h2 className="text-xs font-bold uppercase tracking-wide text-gray-300 mb-3">
-              Trending courses
-            </h2>
-            <div className="space-y-3">
-              {TRENDING.map((c) => (
-                <SidebarItem key={c.id} course={c} />
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h2 className="text-xs font-bold uppercase tracking-wide text-gray-300 mb-3">
-              New releases
-            </h2>
-            <div className="space-y-3">
-              {NEW_RELEASES.map((c) => (
-                <SidebarItem key={c.id} course={c} />
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <h2 className="text-xs font-bold uppercase tracking-wide text-gray-300 mb-3">
-              Recommended for you
-            </h2>
-            <div className="space-y-3">
-              {RECOMMENDED.map((c) => (
-                <SidebarItem key={c.id} course={c} />
-              ))}
-            </div>
-          </div>
-        </aside>
       </div>
-    </div>
+    ))}
+  </div>
+
+    {filtered.length === 0 && (
+      <p className="text-sm text-gray-400 py-12 text-center">
+        No courses match your search.
+      </p>
+    )}
+  </div>
+
+  </div>
   );
 }
