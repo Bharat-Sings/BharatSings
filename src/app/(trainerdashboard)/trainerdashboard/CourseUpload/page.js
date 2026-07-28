@@ -92,7 +92,7 @@ export default function CourseUpload() {
 
     const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URI;
     const router = useRouter();
-    const { trainer, loading } = useTrainerAuth();
+    const { trainer, accessToken, loading } = useTrainerAuth();
 
     // Refs so the unload/unmount cleanup always reads the *latest* values,
     // not whatever was captured when the effect first ran.
@@ -119,14 +119,16 @@ export default function CourseUpload() {
         (idOverride) => {
             const idToDelete = idOverride ?? courseIdRef.current;
             if (!idToDelete || publishedRef.current) return;
-
-            axios
-                .delete(`${API_BASE}/api/v1/courses/deleteCourse`, {
-                    data: { courseId: idToDelete },
-                })
-                .catch((err) => console.log("Cleanup delete failed:", err));
+            axios.delete(`${API_BASE}/api/v1/courses/deleteCourse`, {
+                data: {
+                    courseId: idToDelete,
+                },
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            });
         },
-        [API_BASE]
+        [API_BASE, accessToken]
     );
 
     useEffect(() => {
@@ -175,14 +177,22 @@ export default function CourseUpload() {
 
         setCreatingCourse(true);
         try {
-            const res = await axios.post(`${API_BASE}/api/v1/courses/createCourse`, {
-                title,
-                description,
-                category,
-                language_id: LANGUAGES_WITH_ID[language],
-                price: Number(price),
-                paytm_phone_number: paytmPhoneNumber.trim(),
-            });
+            const res = await axios.post(
+                `${API_BASE}/api/v1/courses/createCourse`,
+                {
+                    title,
+                    description,
+                    category,
+                    language_id: LANGUAGES_WITH_ID[language],
+                    price: Number(price),
+                    paytm_phone_number: paytmPhoneNumber.trim(),
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                }
+            );
 
             const createdId = res.data?.data?.createdCourse?.id;
             if (!createdId) {
