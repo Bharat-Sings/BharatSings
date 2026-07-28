@@ -156,11 +156,11 @@ export default function TrainerDashboard() {
 
             <div className="flex items-center gap-4 shrink-0">
               <GlossyButton
-                onClick={() => router.push("/dashboard/SongUpload")}
+                onClick={() => router.push("/trainerdashboard/CourseUpload")}
                 gradient="bg-gradient-to-br from-[#7A3FE0] via-[#6B4CDB] to-[#3F8FE0]"
                 icon={<MicIcon />}
               >
-                UPLOAD SONG
+                UPLOAD COURSE
               </GlossyButton>
             </div>
 
