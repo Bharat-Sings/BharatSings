@@ -7,13 +7,19 @@ import { IoPrismSharp } from "react-icons/io5";
 const prisma = new PrismaClient();
 
 const createCourse = asyncHandler(async(req, res) => {
-    let { title, description, category, language_id, trainer_id, price } = req.body;
+    let { title, description, category, language_id, price, paytm_phone_number } = req.body;
+
+    const trainer_id = req.trainer.id;
+
+    if (!trainer_id) {
+        throw new ApiError(401, "Unauthorized Request");
+    }
 
     if (
-        [title, description, category].some(
+        [title, description, category, paytm_phone_number].some(
             (field) => !field || field?.trim() === ""
         ) || (
-            [price, language_id, trainer_id].some((field) => !field)
+            [price, language_id].some((field) => !field)
         )
     ) {
         throw new ApiError(401, "All fields are necessary");
@@ -26,7 +32,8 @@ const createCourse = asyncHandler(async(req, res) => {
             category,
             language_id,
             trainer_id,
-            price
+            price,
+            paytm_phone_number
         }
     });
 
@@ -187,11 +194,52 @@ const findCoursesByTrainerId = asyncHandler(async(req, res) => {
     );
 });
 
+const deleteCourse = asyncHandler(async(req, res) => {
+    const { courseId } = req.body;
+
+    if (!courseId) {
+        throw new ApiError(400, "Course Id Undefined");
+    }
+
+    const trainerId = req.trainer.id;
+
+    if (!trainerId) {
+        throw new ApiError(401, "Unauthorized Request");
+    }
+
+    const course = await prisma.course.findUnique({
+        where: {
+            id: courseId
+        }
+    });
+
+    if (!course) {
+        throw new ApiError(404, "Course Not Found");
+    }
+
+    await prisma.course.delete({
+        where: {
+            id: courseId
+        }
+    });
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {},
+            "Successfully Deleted Course"
+        )
+    );
+});
+
 export {
     createCourse,
     findCourses,
     findCoursesByTitle,
     findCoursesByCategory,
     findCoursesByLanguage,
-    findCoursesByTrainerId
+    findCoursesByTrainerId,
+    deleteCourse
 }

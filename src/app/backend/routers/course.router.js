@@ -5,7 +5,8 @@ import {
     findCoursesByTitle,
     findCoursesByCategory,
     findCoursesByLanguage,
-    findCoursesByTrainerId
+    findCoursesByTrainerId,
+    deleteCourse
 } from "../controllers/course.controller.js";
 
 const router = Router();
@@ -15,5 +16,6 @@ router.route("/findCoursesByTitle").get(findCoursesByTitle);
 router.route("/findCoursesByCategory").get(findCoursesByCategory);
 router.route("/findCoursesByLanguage").get(findCoursesByLanguage);
 router.route("/findCoursesByTrainerId").get(findCoursesByTrainerId);
+router.route("/deleteCourse").delete(deleteCourse);
 
 export { router as courseRouter }

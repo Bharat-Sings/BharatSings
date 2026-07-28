@@ -135,23 +135,25 @@ model playlist_song {
 }
 
 model course {
-  id             Int             @id @default(autoincrement())
-  title          String
-  description    String
-  category       String
+  id                 Int             @id @default(autoincrement())
+  title              String
+  description        String
+  category           String
   //level          String
-  language_id    Int
-  language       language        @relation(fields: [language_id], references: [id])
-  trainer_id     Int
-  trainer        Trainer         @relation(fields: [trainer_id], references: [id])
-  price          Float
+  language_id        Int
+  language           language        @relation(fields: [language_id], references: [id])
+  trainer_id         Int
+  trainer            Trainer         @relation(fields: [trainer_id], references: [id])
+  price              Float
+  paytm_phone_number String
   //is_published   Boolean
-  created_at     DateTime        @default(now())
-  updated_at     DateTime        @updatedAt
+  created_at         DateTime        @default(now())
+  updated_at         DateTime        @updatedAt
   //certificate_id Int
-  course_reviews course_review[]
-  enrollments    enrollment[]
-  live_sessions  live_session[]
+  course_reviews     course_review[]
+  enrollments        enrollment[]
+  live_sessions      live_session[]
+  videos             video[]
 }
 
 model course_module {
@@ -175,9 +177,12 @@ model lesson {
 
 model video {
   id          Int      @id @default(autoincrement())
+  name        String
   file_path   String
-  duration    Int
-  uploaded_by Int
+  duration    Int?
+  //uploaded_by Int
+  course_id   Int
+  course      course   @relation(fields: [course_id], references: [id])
   uploaded_at DateTime @default(now())
 }
 

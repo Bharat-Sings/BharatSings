@@ -15,6 +15,7 @@ import { albumRouter } from "./routers/album.router.js";
 import { likeRouter } from "./routers/like.router.js";
 import { courseReviewRouter } from "./routers/coursereview.router.js";
 import { structuredReviewRouter } from "./routers/structuredreview.router.js";
+import { videoRouter } from "./routers/video.router.js";
 
 const app = express();
 app.use(express.json());
@@ -36,6 +37,7 @@ app.use("/api/v1/albums", albumRouter);
 app.use("/api/v1/likes", likeRouter);
 app.use("/api/v1/coursereviews", courseReviewRouter);
 app.use("/api/v1/structuredreviews", structuredReviewRouter);
+app.use("/api/v1/videos", videoRouter);
 
 const PORT = process.env.PORT || 5000;
 
