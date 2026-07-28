@@ -12,7 +12,7 @@ function TrainerDashboardNavbar() {
 
   const menuItems = [
     { name: "Dashboard", icon: <LayoutDashboard size={20} />, link: "/trainerdashboard" },
-    { name: "Courses", icon: <GraduationCap size={20} />, link: "/trainerdashboard/MyCourses" },
+    { name: "My Courses", icon: <GraduationCap size={20} />, link: "/trainerdashboard/MyCourses" },
   ];
 
   return (
