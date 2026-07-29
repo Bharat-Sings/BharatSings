@@ -161,7 +161,7 @@ export default function CoursesPage() {
         <div className="flex gap-2 mt-auto">
           <button
           onClick = {() => {
-            router.push(`/Courses/${course.id}/Details`);
+            router.push(`/dashboard/Courses/${course.id}/Details`);
           }}
           className="flex-1 text-xs font-semibold border border-white/20 rounded-lg py-2 hover:bg-white/5">
             View Details
@@ -169,7 +169,7 @@ export default function CoursesPage() {
 
           <button
             onClick = {() => {
-              router.push(`/Courses/${course.id}/Enroll`);
+              router.push(`/dashboard/Courses/${course.id}/Enroll`);
             }}
             className="flex-1 text-xs font-semibold rounded-lg py-2 text-white"
             style={{
