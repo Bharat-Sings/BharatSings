@@ -96,7 +96,12 @@ const findEnrollmentsByUserId = asyncHandler(async(req, res) => {
             user_id: user_id
         },
         include: {
-            course: true
+            course: {
+                include: {
+                    trainer: true,
+                    language: true
+                }
+            }
         }
     });
 
