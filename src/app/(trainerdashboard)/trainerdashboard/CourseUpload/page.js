@@ -112,104 +112,9 @@ export default function CourseUpload() {
         }
     }, [trainer, loading, router]);
 
-    // If the trainer created a course but leaves without publishing it,
-    // delete the orphaned course. Covers both in-app unmount (back button,
-    // navigating away) and closing/refreshing the tab (best-effort only —
-    // browsers don't guarantee async requests finish on unload).
-    if (loading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-[#0B0B10]">
-                <h1 className="text-lg font-semibold text-gray-400">Loading....</h1>
-            </div>
-        );
-    }
-
     const uploadedCount = videos.filter((v) => v.status === "done").length;
     const pendingCount = videos.filter((v) => v.status === "idle" && v.file).length;
     const canAddMoreSlots = videos.length < MAX_VIDEOS;
-
-    const createQR = async () => {
-        try {
-            const uploadData = new FormData();
-
-            uploadData.append("file", QRFile);
-            uploadData.append("upload_preset", "Course_QR");
-
-            const res = await fetch(
-                "https://api.cloudinary.com/v1_1/otg38vo5/image/upload",
-                {
-                    method: "POST",
-                    body: uploadData
-                }
-            );
-
-            if (!res.ok) {
-                alert("Failed To Upload QR Image! Cloudinary Image Upload Failed!");
-                return;
-            }
-
-            const data = await res.json();
-            setQRFilePath(data.secure_url);
-
-            alert("Successfully Uploaded QR Image!");
-        } catch (err) {
-            console.log(err);
-        }
-    }
-
-    // --- Course creation ---
-    const handleCreateCourse = async (e) => {
-        e.preventDefault();
-        setCourseError(null);
-
-        if (!title.trim() || !description.trim() || !category.trim() || !language) {
-            setCourseError("Please fill in all course details.");
-            return;
-        }
-        if (!price || Number(price) <= 0) {
-            setCourseError("Please enter a valid price.");
-            return;
-        }
-        if (!/^\d{10}$/.test(paytmPhoneNumber.trim())) {
-            setCourseError("Enter a valid 10-digit Paytm phone number.");
-            return;
-        }
-
-        setCreatingCourse(true);
-        try {
-            const res = await axios.post(
-                `${API_BASE}/api/v1/courses/createCourse`,
-                {
-                    title,
-                    description,
-                    category,
-                    language_id: LANGUAGES_WITH_ID[language],
-                    price: Number(price),
-                    QR_file_path: QRFilePath,
-                },
-                {
-                    headers: {
-                        Authorization: `Bearer ${accessToken}`,
-                    },
-                }
-            );
-
-            const createdId = res.data?.data?.createdCourse?.id;
-            if (!createdId) {
-                setCourseError("Something went wrong creating the course.");
-                return;
-            }
-
-            setCourseId(createdId);
-        } catch (err) {
-            console.log(err);
-            setCourseError(
-                err.response?.data?.message || "Couldn't create the course. Try again."
-            );
-        } finally {
-            setCreatingCourse(false);
-        }
-    };
 
     // --- Video slot management ---
     const addVideoSlot = () => {
@@ -294,6 +199,101 @@ export default function CourseUpload() {
         },
         [API_BASE]
     );
+
+    // If the trainer created a course but leaves without publishing it,
+    // delete the orphaned course. Covers both in-app unmount (back button,
+    // navigating away) and closing/refreshing the tab (best-effort only —
+    // browsers don't guarantee async requests finish on unload).
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-[#0B0B10]">
+                <h1 className="text-lg font-semibold text-gray-400">Loading....</h1>
+            </div>
+        );
+    }
+
+    const createQR = async () => {
+        try {
+            const uploadData = new FormData();
+
+            uploadData.append("file", QRFile);
+            uploadData.append("upload_preset", "Course_QR");
+
+            const res = await fetch(
+                "https://api.cloudinary.com/v1_1/otg38vo5/image/upload",
+                {
+                    method: "POST",
+                    body: uploadData
+                }
+            );
+
+            if (!res.ok) {
+                alert("Failed To Upload QR Image! Cloudinary Image Upload Failed!");
+                return;
+            }
+
+            const data = await res.json();
+            setQRFilePath(data.secure_url);
+
+            alert("Successfully Uploaded QR Image!");
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    // --- Course creation ---
+    const handleCreateCourse = async (e) => {
+        e.preventDefault();
+        setCourseError(null);
+
+        if (!title.trim() || !description.trim() || !category.trim() || !language) {
+            setCourseError("Please fill in all course details.");
+            return;
+        }
+        if (!price || Number(price) <= 0) {
+            setCourseError("Please enter a valid price.");
+            return;
+        }
+        if (!/^\d{10}$/.test(paytmPhoneNumber.trim())) {
+            setCourseError("Enter a valid 10-digit Paytm phone number.");
+            return;
+        }
+
+        setCreatingCourse(true);
+        try {
+            const res = await axios.post(
+                `${API_BASE}/api/v1/courses/createCourse`,
+                {
+                    title,
+                    description,
+                    category,
+                    language_id: LANGUAGES_WITH_ID[language],
+                    price: Number(price),
+                    QR_file_path: QRFilePath,
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                }
+            );
+
+            const createdId = res.data?.data?.createdCourse?.id;
+            if (!createdId) {
+                setCourseError("Something went wrong creating the course.");
+                return;
+            }
+
+            setCourseId(createdId);
+        } catch (err) {
+            console.log(err);
+            setCourseError(
+                err.response?.data?.message || "Couldn't create the course. Try again."
+            );
+        } finally {
+            setCreatingCourse(false);
+        }
+    };
 
     const publishCourse = async () => {
         try {
