@@ -30,12 +30,12 @@ const createEnrollment = asyncHandler(async(req, res) => {
             },
             course: {
                 connect: {
-                    id: course_id
+                    id: parseInt(course_id, 10)
                 }
             },
             screenshot: {
                 connect: {
-                    id: screenshot_id
+                    id: parseInt(screenshot_id, 10)
                 }
             }
         }
@@ -63,7 +63,7 @@ const findEnrollmentsByCourseId = asyncHandler(async (req, res) => {
 
     const enrollments = await prisma.enrollment.findMany({
         where: {
-            course_id: course_id
+            course_id: parseInt(course_id, 10)
         }
     });
 
