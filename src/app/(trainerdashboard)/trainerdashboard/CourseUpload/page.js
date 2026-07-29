@@ -10,7 +10,6 @@ import {
     Tag,
     IndianRupee,
     Languages,
-    Smartphone,
     UploadCloud,
     Video,
     CheckCircle2,
@@ -19,6 +18,7 @@ import {
     Plus,
     Trash2,
     Rocket,
+    QrCode
 } from "lucide-react";
 
 const MAX_VIDEOS = 5;
@@ -78,8 +78,11 @@ export default function CourseUpload() {
     const [category, setCategory] = useState("");
     const [price, setPrice] = useState("");
     const [language, setLanguage] = useState("");
-    const [paytmPhoneNumber, setPaytmPhoneNumber] = useState("");
+    // remove: const [paytmPhoneNumber, setPaytmPhoneNumber] = useState("");
+    const [QRFile, setQRFile] = useState(null);
     const [QRFilePath, setQRFilePath] = useState("");
+    const [uploadingQR, setUploadingQR] = useState(false);
+    const [QRError, setQRError] = useState(null);
 
     // --- Course lifecycle ---
     const [courseId, setCourseId] = useState(null);
@@ -212,34 +215,44 @@ export default function CourseUpload() {
         );
     }
 
-    const createQR = async () => {
+    const createQR = async (file) => {
+        setQRError(null);
+        if (!file) return;
+        if (!file.type.startsWith("image/")) {
+            setQRError("Please choose an image file.");
+            return;
+        }
+        if (file.size > 5 * 1024 * 1024) {
+            setQRError("QR image must be under 5MB.");
+            return;
+        }
+
+        setQRFile(file);
+        setUploadingQR(true);
         try {
             const uploadData = new FormData();
-
-            uploadData.append("file", QRFile);
+            uploadData.append("file", file);
             uploadData.append("upload_preset", "Course_QR");
 
             const res = await fetch(
                 "https://api.cloudinary.com/v1_1/otg38vo5/image/upload",
-                {
-                    method: "POST",
-                    body: uploadData
-                }
+                { method: "POST", body: uploadData }
             );
 
             if (!res.ok) {
-                alert("Failed To Upload QR Image! Cloudinary Image Upload Failed!");
+                setQRError("Cloudinary upload failed. Try again.");
                 return;
             }
 
             const data = await res.json();
             setQRFilePath(data.secure_url);
-
-            alert("Successfully Uploaded QR Image!");
         } catch (err) {
             console.log(err);
+            setQRError("Couldn't upload the QR image. Try again.");
+        } finally {
+            setUploadingQR(false);
         }
-    }
+    };
 
     // --- Course creation ---
     const handleCreateCourse = async (e) => {
@@ -254,8 +267,10 @@ export default function CourseUpload() {
             setCourseError("Please enter a valid price.");
             return;
         }
-        if (!/^\d{10}$/.test(paytmPhoneNumber.trim())) {
-            setCourseError("Enter a valid 10-digit Paytm phone number.");
+
+        // replace the paytmPhoneNumber regex check with:
+        if (!QRFilePath) {
+            setCourseError("Please upload your payment QR code screenshot.");
             return;
         }
 
@@ -269,7 +284,6 @@ export default function CourseUpload() {
                     category,
                     language_id: LANGUAGES_WITH_ID[language],
                     price: Number(price),
-                    QR_file_path: QRFilePath,
                 },
                 {
                     headers: {
@@ -355,7 +369,8 @@ export default function CourseUpload() {
             setCategory("");
             setPrice("");
             setLanguage("");
-            setPaytmPhoneNumber("");
+            setQRFile(null);
+            setQRFilePath("");
             setCourseId(null);
             setVideos([emptyVideoSlot()]);
             setCourseError(null);
@@ -453,18 +468,47 @@ export default function CourseUpload() {
                             </FieldShell>
                         </div>
 
-                        <FieldShell icon={<Smartphone size={18} />} label="Paytm Phone Number">
-                            <input
-                                type="tel"
-                                value={paytmPhoneNumber}
-                                onChange={(e) =>
-                                    setPaytmPhoneNumber(e.target.value.replace(/\D/g, "").slice(0, 10))
-                                }
-                                placeholder="10-digit number for receiving payments"
-                                className="w-full bg-transparent text-sm text-white placeholder-gray-600 focus:outline-none mt-0.5"
-                                required
-                            />
-                        </FieldShell>
+                            <FieldShell icon={<QrCode size={18} />} label="Payment QR Code">
+                                <label
+                                    className={`mt-1 flex items-center gap-2 rounded-lg border border-dashed border-gray-700 px-3 py-2.5 text-xs text-gray-400 transition-colors ${
+                                        uploadingQR ? "opacity-50" : "cursor-pointer hover:border-[#7F56D9] hover:text-[#7F56D9]"
+                                    }`}
+                                >
+                                    {uploadingQR ? (
+                                        <Loader2 size={16} className="animate-spin" />
+                                    ) : QRFilePath ? (
+                                        <CheckCircle2 size={16} className="text-emerald-400" />
+                                    ) : (
+                                        <UploadCloud size={16} />
+                                    )}
+                                    {uploadingQR
+                                        ? "Uploading QR..."
+                                        : QRFile
+                                        ? QRFile.name
+                                        : "Browse QR code screenshot"}
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        disabled={uploadingQR}
+                                        onChange={(e) => createQR(e.target.files?.[0] || null)}
+                                        className="hidden"
+                                    />
+                                </label>
+
+                                {QRFilePath && (
+                                    <img
+                                        src={QRFilePath}
+                                        alt="Payment QR code preview"
+                                        className="mt-3 h-28 w-28 rounded-lg border border-gray-800 object-contain bg-white p-1"
+                                    />
+                                )}
+
+                                {QRError && (
+                                    <p className="mt-2 flex items-center gap-1.5 text-xs text-red-400">
+                                        <XCircle size={13} /> {QRError}
+                                    </p>
+                                )}
+                            </FieldShell>
 
                         {courseError && (
                             <p className="text-xs text-red-400 text-center">{courseError}</p>
