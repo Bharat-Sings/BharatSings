@@ -62,7 +62,7 @@ export default function MyCourses() {
     if (!loading && user) {
       getMyEnrollments();
     }
-  }, [user, loading, getMyEnrollments]);
+  }, [user, loading]);
 
   // Filter courses based on search query
   const filteredEnrollments = enrollments.filter((item) => {
@@ -152,7 +152,7 @@ export default function MyCourses() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredEnrollments.map((enrollment) => {
               const course = enrollment?.course || {};
-              const courseId = course?._id || course?.id || enrollment?._id;
+              const courseId = course?.id || course?.id || enrollment?.id;
               
               // Extract details safely
               const trainerName = course?.trainer?.name || course?.trainer || "Instructor";
