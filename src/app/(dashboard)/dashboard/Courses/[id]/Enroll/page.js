@@ -7,6 +7,7 @@ import { useAuth } from "@/app/context/AuthContext";
 
 export default function Enroll() {
   const { user, accessToken, loading } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     if (!user && !loading) {
@@ -14,7 +15,6 @@ export default function Enroll() {
     }
   }, [user, loading, router]);
 
-  const router = useRouter();
   const params = useParams();
   const courseId = params?.id;
 
