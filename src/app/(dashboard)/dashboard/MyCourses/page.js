@@ -8,7 +8,7 @@ import axios from "axios";
 export default function MyCourses() {
     const [enrollments, setEnrollments] = useState([]);
 
-    const { user, loading } = useAuth();
+    const { user, accessToken, loading } = useAuth();
     const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URI;
     const router = useRouter();
 
@@ -18,10 +18,16 @@ export default function MyCourses() {
         }
     }, [user, loading, router]);
 
+    //Courses are in enrollment.course
     const getMyEnrollments = async () => {
         try {
             const response = await axios.get(
-                `${API_BASE}/api/v1/enrollments/findEnrollmentsByUserId`
+                `${API_BASE}/api/v1/enrollments/findEnrollmentsByUserId`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`
+                    }
+                }
             );
 
             setEnrollments(response.data.data.enrollments);
@@ -29,6 +35,12 @@ export default function MyCourses() {
             console.log(err);
         }
     }
+
+    useEffect(() => {
+        if (!loading && user) {
+            getMyEnrollments();
+        }
+    }, [user, loading, enrollments]);
 
     if (loading) {
         return (

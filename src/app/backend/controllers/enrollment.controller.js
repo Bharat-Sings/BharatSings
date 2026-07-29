@@ -94,6 +94,9 @@ const findEnrollmentsByUserId = asyncHandler(async(req, res) => {
     const enrollments = await prisma.enrollment.findMany({
         where: {
             user_id: user_id
+        },
+        include: {
+            course: true
         }
     });
 
