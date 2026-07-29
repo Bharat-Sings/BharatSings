@@ -159,11 +159,18 @@ export default function CoursesPage() {
         </p>
 
         <div className="flex gap-2 mt-auto">
-          <button className="flex-1 text-xs font-semibold border border-white/20 rounded-lg py-2 hover:bg-white/5">
+          <button
+          onClick = {() => {
+            router.push(`/Courses/${course.id}/Details`);
+          }}
+          className="flex-1 text-xs font-semibold border border-white/20 rounded-lg py-2 hover:bg-white/5">
             View Details
           </button>
 
           <button
+            onClick = {() => {
+              router.push(`/Courses/${course.id}/Enroll`);
+            }}
             className="flex-1 text-xs font-semibold rounded-lg py-2 text-white"
             style={{
               background: "linear-gradient(90deg, #8B6EF2, #6C4FE0)",
