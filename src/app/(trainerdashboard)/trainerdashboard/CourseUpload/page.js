@@ -284,6 +284,7 @@ export default function CourseUpload() {
                     category,
                     language_id: LANGUAGES_WITH_ID[language],
                     price: Number(price),
+                    QR_file_path: QRFilePath
                 },
                 {
                     headers: {
