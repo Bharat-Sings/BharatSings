@@ -169,7 +169,7 @@ export default function MyCourses() {
                     </div>
 
                     <button
-                        onClick={() => router.push("/CourseUpload")}
+                        onClick={() => router.push("/trainerdashboard/CourseUpload")}
                         className="flex items-center justify-center gap-1.5 text-xs font-semibold text-white bg-[#6366F1] rounded-full px-5 py-2.5 hover:bg-[#5356E2] transition-colors shadow-lg shadow-indigo-600/20 self-start sm:self-auto"
                     >
                         <Plus size={14} /> New Course
