@@ -137,7 +137,7 @@ export default function MyCourses() {
             </p>
             {!searchQuery && (
               <button
-                onClick={() => router.push("/courses")}
+                onClick={() => router.push("/dashboard/Courses")}
                 className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium px-5 py-2.5 rounded-xl shadow-lg shadow-indigo-600/20 transition-all active:scale-[0.98]"
               >
                 Explore Courses
