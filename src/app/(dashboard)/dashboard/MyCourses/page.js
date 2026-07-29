@@ -62,7 +62,7 @@ export default function MyCourses() {
     if (!loading && user) {
       getMyEnrollments();
     }
-  }, [user, loading]);
+  }, [user, loading, getMyEnrollments, accessToken, API_BASE]);
 
   // Filter courses based on search query
   const filteredEnrollments = enrollments.filter((item) => {
