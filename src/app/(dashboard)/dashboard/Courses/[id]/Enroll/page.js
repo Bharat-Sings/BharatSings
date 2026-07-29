@@ -3,14 +3,23 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function Enroll() {
+  const { user, accessToken, loading } = useAuth();
+
+  useEffect(() => {
+    if (!user && !loading) {
+      router.replace("/Login");
+    }
+  }, [user, loading, router]);
+
   const router = useRouter();
   const params = useParams();
   const courseId = params?.id;
 
   const [course, setCourse] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [Loading, setLoading] = useState(true);
   const [screenshotId, setScreenshotId] = useState("");
   const [preview, setPreview] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -79,7 +88,7 @@ export default function Enroll() {
       const res = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URI}/api/v1/enrollments/createEnrollment`,
         { course_id: courseId, screenshot_id: screenshotId },
-        { headers: { "Content-Type": "application/json" } }
+        { headers: { Authorization: `Bearer ${accessToken}` } }
       );
       if (!res.data?.data?.createdEnrollment?.id) throw new Error("Enrollment failed");
       setEnrolled(true);
@@ -92,7 +101,7 @@ export default function Enroll() {
     }
   };
 
-  if (loading) {
+  if (Loading) {
     return (
       <div className="flex min-h-screen items-center justify-center text-gray-600">
         Loading course…
@@ -104,6 +113,14 @@ export default function Enroll() {
     return (
       <div className="flex min-h-screen items-center justify-center text-gray-600">
         Course not found.
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F4F5F7]">
+        <h1 className="text-lg font-semibold text-gray-500">Loading....</h1>
       </div>
     );
   }
