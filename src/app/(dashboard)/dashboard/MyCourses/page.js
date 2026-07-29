@@ -25,6 +25,8 @@ export default function MyCourses() {
   const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URI;
   const router = useRouter();
 
+  console.log(accessToken);
+
   // Redirect if unauthenticated
   useEffect(() => {
     if (!user && !loading) {
