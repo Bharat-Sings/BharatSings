@@ -2,22 +2,42 @@ import { PrismaClient } from "@prisma/client";
 import { asyncHandler } from "../utils/AsyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { connect } from "mongoose";
 
 const prisma = new PrismaClient();
 
 const createEnrollment = asyncHandler(async(req, res) => {
-    let { user_id, course_id } = req.body;
+    let { course_id, screenshot_id } = req.body;
+
+    const user_id = req.user.id;
+
+    if (!user_id) {
+        throw new ApiError(401, "Unauthorized Request");
+    }
 
     if (
-        [user_id, course_id].some((field) => !field)
+        [course_id, screenshot_id].some((field) => !field)
     ) {
         throw new ApiError(401, "All fields are necessary");
     }
 
     const enrollment = await prisma.enrollment.create({
         data: {
-            user_id,
-            course_id
+            user: {
+                connect: {
+                    id: user_id
+                }
+            },
+            course: {
+                connect: {
+                    id: course_id
+                }
+            },
+            screenshot: {
+                connect: {
+                    id: screenshot_id
+                }
+            }
         }
     });
 
@@ -65,10 +85,10 @@ const findEnrollmentsByCourseId = asyncHandler(async (req, res) => {
 });
 
 const findEnrollmentsByUserId = asyncHandler(async(req, res) => {
-    let { user_id } = req.query;
+    const user_id = req.user.id;
 
     if (!user_id) {
-        throw new ApiError(401, "User Id Undefined");
+        throw new ApiError(401, "Unauthorized Request");
     }
 
     const enrollments = await prisma.enrollment.findMany({

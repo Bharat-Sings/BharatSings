@@ -145,7 +145,8 @@ model course {
   trainer_id         Int
   trainer            Trainer         @relation(fields: [trainer_id], references: [id])
   price              Float
-  paytm_phone_number String
+  paytm_phone_number String?
+  QR_file_path       String?
   //is_published   Boolean
   created_at         DateTime        @default(now())
   updated_at         DateTime        @updatedAt
@@ -409,16 +410,26 @@ model live_session {
 }
 
 model enrollment {
-  id             Int         @id @default(autoincrement())
+  id             Int          @id @default(autoincrement())
   user_id        Int
-  user           User        @relation(fields: [user_id], references: [id])
+  user           User         @relation(fields: [user_id], references: [id])
   course_id      Int
-  course         course      @relation(fields: [course_id], references: [id])
-  enrolled_at    DateTime    @default(now())
-  progress       Float
-  completed      Boolean
-  certificate_id Int
-  certificate    certificate @relation(fields: [certificate_id], references: [id])
+  course         course       @relation(fields: [course_id], references: [id])
+  enrolled_at    DateTime     @default(now())
+  progress       Float        @default(0.0)
+  completed      Boolean      @default(false)
+  certificate_id Int?
+  certificate    certificate? @relation(fields: [certificate_id], references: [id])
+  screenshot_id  Int
+  screenshot     screenshot   @relation(fields: [screenshot_id], references: [id])
+
+  @@unique([user_id, course_id])
+}
+
+model screenshot {
+  id          Int          @id @default(autoincrement())
+  file_path   String       @unique
+  enrollments enrollment[]
 }
 
 model assignment {

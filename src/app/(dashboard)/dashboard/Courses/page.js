@@ -138,6 +138,10 @@ export default function CoursesPage() {
           {course.title}
         </h3>
 
+        <p className="text-sm text-gray-500 mb-1">
+          Trainer: {course.trainer.name}
+        </p>
+
         <p className="text-sm text-gray-400 mb-3 line-clamp-3">
           {course.description}
         </p>

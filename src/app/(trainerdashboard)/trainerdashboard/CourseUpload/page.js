@@ -79,6 +79,7 @@ export default function CourseUpload() {
     const [price, setPrice] = useState("");
     const [language, setLanguage] = useState("");
     const [paytmPhoneNumber, setPaytmPhoneNumber] = useState("");
+    const [QRFilePath, setQRFilePath] = useState("");
 
     // --- Course lifecycle ---
     const [courseId, setCourseId] = useState(null);
@@ -127,6 +128,35 @@ export default function CourseUpload() {
     const pendingCount = videos.filter((v) => v.status === "idle" && v.file).length;
     const canAddMoreSlots = videos.length < MAX_VIDEOS;
 
+    const createQR = async () => {
+        try {
+            const uploadData = new FormData();
+
+            uploadData.append("file", QRFile);
+            uploadData.append("upload_preset", "Course_QR");
+
+            const res = await fetch(
+                "https://api.cloudinary.com/v1_1/otg38vo5/image/upload",
+                {
+                    method: "POST",
+                    body: uploadData
+                }
+            );
+
+            if (!res.ok) {
+                alert("Failed To Upload QR Image! Cloudinary Image Upload Failed!");
+                return;
+            }
+
+            const data = await res.json();
+            setQRFilePath(data.secure_url);
+
+            alert("Successfully Uploaded QR Image!");
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
     // --- Course creation ---
     const handleCreateCourse = async (e) => {
         e.preventDefault();
@@ -155,7 +185,7 @@ export default function CourseUpload() {
                     category,
                     language_id: LANGUAGES_WITH_ID[language],
                     price: Number(price),
-                    paytm_phone_number: paytmPhoneNumber.trim(),
+                    QR_file_path: QRFilePath,
                 },
                 {
                     headers: {

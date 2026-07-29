@@ -7,7 +7,7 @@ import { IoPrismSharp } from "react-icons/io5";
 const prisma = new PrismaClient();
 
 const createCourse = asyncHandler(async(req, res) => {
-    let { title, description, category, language_id, price, paytm_phone_number } = req.body;
+    let { title, description, category, language_id, price, QR_file_path } = req.body;
 
     const trainer_id = req.trainer.id;
 
@@ -16,7 +16,7 @@ const createCourse = asyncHandler(async(req, res) => {
     }
 
     if (
-        [title, description, category, paytm_phone_number].some(
+        [title, description, category, QR_file_path].some(
             (field) => !field || field?.trim() === ""
         ) || (
             [price, language_id].some((field) => !field)
@@ -33,7 +33,7 @@ const createCourse = asyncHandler(async(req, res) => {
             language_id,
             trainer_id,
             price,
-            paytm_phone_number
+            QR_file_path
         }
     });
 
@@ -61,6 +61,7 @@ const findCourses = asyncHandler(async(req, res) => {
         },
         include: {
             language: true,
+            trainer: true,
         },
     });
 
@@ -285,6 +286,36 @@ const publishCourse = asyncHandler(async(req, res) => {
     );
 });
 
+const findCourseById = asyncHandler(async(req, res) => {
+    const { course_id } = req.query;
+
+    if (!course_id) {
+        throw new ApiError(400, "Course Id Undefined");
+    }
+
+    const course = await prisma.course.findUnique({
+        where: {
+            id: course_id
+        }
+    });
+
+    if (!course) {
+        throw new ApiError(404, "Course not found");
+    }
+
+    return res
+    .status(200)
+    .json(
+        new ApiResponse(
+            200,
+            {
+                course: course
+            },
+            "Successfully Found Course"
+        )
+    );
+});
+
 export {
     createCourse,
     findCourses,
@@ -293,5 +324,6 @@ export {
     findCoursesByLanguage,
     findCoursesByTrainerId,
     deleteCourse,
-    publishCourse
+    publishCourse,
+    findCourseById
 }
