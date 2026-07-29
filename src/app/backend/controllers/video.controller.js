@@ -30,7 +30,7 @@ const createVideo = asyncHandler(async(req, res) => {
         data: {
             course: {
                 connect: {
-                    id: course_id
+                    id: parseInt(course_id, 10)
                 }
             },
             name,
@@ -64,7 +64,7 @@ const findVideosByCourseId = asyncHandler(async(req, res) => {
 
     const videos = await prisma.video.findMany({
         where: {
-            course_id
+            course_id: parseInt(course_id, 10)
         }
     });
 
