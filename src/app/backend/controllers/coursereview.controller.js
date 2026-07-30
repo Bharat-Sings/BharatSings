@@ -26,7 +26,7 @@ const createCourseReview = asyncHandler(async(req, res) => {
         data: {
             user: {
                 connect: {
-                    id: parseInt(user_id, 10)
+                    id: user_id
                 }
             },
             course: {
