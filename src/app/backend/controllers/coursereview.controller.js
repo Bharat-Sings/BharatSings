@@ -24,8 +24,16 @@ const createCourseReview = asyncHandler(async(req, res) => {
 
     const courseReview = await prisma.course_review.create({
         data: {
-            user_id,
-            course_id,
+            user: {
+                connect: {
+                    id: parseInt(user_id, 10)
+                }
+            },
+            course: {
+                connect: {
+                    id: parseInt(course_id, 10)
+                }
+            },
             review_text,
             rating
         }
@@ -58,6 +66,9 @@ const findCourseReviewsByCourseId = asyncHandler(async(req, res) => {
     const courseReviews = await prisma.course_review.findMany({
         where: {
             course_id: parseInt(courseId, 10)
+        },
+        include: {
+            user: true
         }
     });
 
