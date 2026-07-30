@@ -15,7 +15,7 @@ function DashboardNavbar() {
     { name: "Songs", icon: <Music size={20} />, link: "/dashboard/Songs" },
     { name: "Courses", icon: <GraduationCap size={20} />, link: "/dashboard/Courses" },
     { name: "My Courses", icon: <Play />, link: "/dashboard/MyCourses" },
-    { name: "Marketplace", icon: <Store size={20} />, link: "/dashboard/Marketplace" },
+    //{ name: "Marketplace", icon: <Store size={20} />, link: "/dashboard/Marketplace" },
     { name: "Collaboration", icon: <Users size={20} />, link: "/dashboard/Collaboration" },
   ];
 
