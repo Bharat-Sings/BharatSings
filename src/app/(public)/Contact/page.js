@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import {
   Mail,
-  Instagram,
   Copy,
   Check,
   ExternalLink,
@@ -11,6 +10,7 @@ import {
   Sparkles,
   ArrowLeft,
 } from "lucide-react";
+import { FiInstagram } from "react-icons/fi";
 import { useRouter } from "next/navigation";
 
 export default function Contact() {
@@ -99,7 +99,7 @@ export default function Contact() {
           <div className="rounded-[20px] bg-[#13131A] border border-gray-800/80 p-6 space-y-4 hover:border-pink-500/40 transition-all flex flex-col justify-between">
             <div className="flex items-center justify-between">
               <span className="p-3 rounded-xl bg-[#2A1A2E] border border-[#502570] text-pink-400">
-                <Instagram size={20} />
+                <FiInstagram size={20} />
               </span>
               <a
                 href={instagramUrl}

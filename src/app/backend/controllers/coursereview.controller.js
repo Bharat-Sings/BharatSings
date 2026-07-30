@@ -43,7 +43,7 @@ const createCourseReview = asyncHandler(async(req, res) => {
 });
 
 const findCourseReviewsByCourseId = asyncHandler(async(req, res) => {
-    let { courseId } = req.body;
+    let { courseId } = req.query;
 
     if (!courseId) {
         throw new ApiError(400, "Course Id Undefined");
@@ -51,7 +51,7 @@ const findCourseReviewsByCourseId = asyncHandler(async(req, res) => {
 
     const courseReviews = await prisma.course_review.findMany({
         where: {
-            course_id: courseId
+            course_id: parseInt(courseId, 10)
         }
     });
 
