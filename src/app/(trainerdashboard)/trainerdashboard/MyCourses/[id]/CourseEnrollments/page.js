@@ -47,7 +47,7 @@ export default function CourseEnrollments() {
         setError(null);
 
         const response = await axios.get(
-          `${API_BASE}/api/v1/enrollments/getEnrollmentsByCourseId`,
+          `${API_BASE}/api/v1/enrollments/findEnrollmentsByCourseId`,
           {
             params: { course_id: courseId },
             headers: { Authorization: `Bearer ${accessToken}` },
