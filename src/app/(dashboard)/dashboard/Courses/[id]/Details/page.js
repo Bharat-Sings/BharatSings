@@ -104,11 +104,6 @@ export default function Details() {
       return;
     }
 
-    if (!userId.trim()) {
-      setReviewMessage({ type: "error", text: "User ID is required to post a review." });
-      return;
-    }
-
     try {
       if (!user) {
         alert("Please login to submit review");
