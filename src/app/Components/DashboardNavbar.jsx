@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { usePathname } from "next/navigation";import Image from "next/image";
 import logo from "../Images/logo.jpg";
 // Optional: Install 'lucide-react' for clean iconography, or swap with your own SVGs
-import { LayoutDashboard, Music, GraduationCap, Store, Users, Menu, X, Play } from "lucide-react";
+import { LayoutDashboard, Music, GraduationCap, Store, Users, Menu, X, Play, Mail } from "lucide-react";
 
 function DashboardNavbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,6 +17,7 @@ function DashboardNavbar() {
     { name: "My Courses", icon: <Play />, link: "/dashboard/MyCourses" },
     //{ name: "Marketplace", icon: <Store size={20} />, link: "/dashboard/Marketplace" },
     { name: "Collaboration", icon: <Users size={20} />, link: "/dashboard/Collaboration" },
+    { name: "Contact", icon: <Mail size={20} />, link: "/dashboard/Contact" },
   ];
 
   return (
