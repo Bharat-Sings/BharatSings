@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { useTrainerAuth } from "@/app/context/TrainerAuthContext";
 import { useRouter, useParams } from "next/navigation";
 import axios from "axios";
-import Image from "next/image";
 import {
   Users,
   UserCheck,
@@ -30,14 +29,27 @@ export default function CourseEnrollments() {
   const params = useParams();
   const courseId = params?.id;
 
-  // Protect route
+  // Function to safely resolve both Cloudinary CDN and local server URLs
+  const getImageUrl = (filePath) => {
+    if (!filePath || typeof filePath !== "string") return null;
+
+    // Handle full Cloudinary URLs stored directly in DB
+    if (filePath.startsWith("http://") || filePath.startsWith("https://")) {
+      return filePath;
+    }
+
+    // Handle relative paths (fallback for local disk uploads)
+    const cleanBase = API_BASE ? API_BASE.replace(/\/$/, "") : "";
+    const cleanPath = filePath.startsWith("/") ? filePath : `/${filePath}`;
+    return `${cleanBase}${cleanPath}`;
+  };
+
   useEffect(() => {
     if (!trainer && !authLoading) {
       router.replace("/trainerLogin");
     }
   }, [trainer, router, authLoading]);
 
-  // Fetch enrollments
   useEffect(() => {
     const getEnrollments = async () => {
       if (!courseId || !accessToken) return;
@@ -81,7 +93,7 @@ export default function CourseEnrollments() {
   return (
     <div className="min-h-screen bg-[#0B0B10] text-white py-10 px-4 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-5xl space-y-8">
-        {/* Header & Navigation */}
+        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-gray-800/80 pb-6">
           <div>
             <button
@@ -110,7 +122,6 @@ export default function CourseEnrollments() {
           </div>
         </div>
 
-        {/* Error Notification */}
         {error && (
           <div className="rounded-2xl border border-red-500/20 bg-red-500/10 p-4 text-xs text-red-400 flex items-center gap-3">
             <AlertTriangle size={16} className="shrink-0" />
@@ -118,7 +129,6 @@ export default function CourseEnrollments() {
           </div>
         )}
 
-        {/* Reporting Guidance Notice */}
         <div className="rounded-2xl border border-amber-500/20 bg-amber-500/5 p-4 text-xs text-amber-300/90 flex items-start sm:items-center gap-3">
           <ShieldAlert size={18} className="shrink-0 text-amber-400 mt-0.5 sm:mt-0" />
           <div className="flex-1">
@@ -133,7 +143,6 @@ export default function CourseEnrollments() {
           </div>
         </div>
 
-        {/* Enrollments Grid */}
         {enrollments.length === 0 ? (
           <div className="rounded-3xl border border-dashed border-gray-800 bg-[#13131A] py-16 text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-gray-900 border border-gray-800 text-gray-500">
@@ -149,7 +158,8 @@ export default function CourseEnrollments() {
             {enrollments.map((enrollment, index) => {
               const studentName = enrollment?.user?.display_name || "Anonymous Student";
               const studentCountry = enrollment?.user?.country || "Not Specified";
-              const screenshotUrl = enrollment?.screenshot?.file_path;
+              const rawFilePath = enrollment?.screenshot?.file_path;
+              const screenshotUrl = getImageUrl(rawFilePath);
 
               return (
                 <div
@@ -157,7 +167,6 @@ export default function CourseEnrollments() {
                   className="group rounded-2xl bg-[#13131A] border border-gray-800/80 hover:border-gray-700 p-5 transition-all duration-200 flex flex-col justify-between shadow-lg"
                 >
                   <div className="space-y-4">
-                    {/* User Info Header */}
                     <div className="flex items-center justify-between border-b border-gray-800/60 pb-3">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-full bg-[#1C1C24] border border-gray-700 flex items-center justify-center font-medium text-sm text-[#7F56D9]">
@@ -176,7 +185,6 @@ export default function CourseEnrollments() {
                       </span>
                     </div>
 
-                    {/* Screenshot Container */}
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-xs text-gray-400">
                         <span className="flex items-center gap-1.5 font-medium">
@@ -192,14 +200,14 @@ export default function CourseEnrollments() {
                         )}
                       </div>
 
+                      {/* Native <img> rendering to match the behavior in Enroll.jsx */}
                       <div className="relative h-48 w-full rounded-xl bg-[#1C1C24] border border-gray-800 overflow-hidden flex items-center justify-center group/img">
                         {screenshotUrl ? (
                           <>
-                            <Image
+                            <img
                               src={screenshotUrl}
                               alt={`Payment screenshot for ${studentName}`}
-                              fill
-                              className="object-contain p-2 transition-transform duration-300 group-hover/img:scale-105"
+                              className="h-full w-full object-contain p-2 transition-transform duration-300 group-hover/img:scale-105"
                             />
                             <div
                               onClick={() => setSelectedImage(screenshotUrl)}
@@ -220,7 +228,6 @@ export default function CourseEnrollments() {
                     </div>
                   </div>
 
-                  {/* Card Footer Warning */}
                   <div className="mt-4 pt-3 border-t border-gray-800/60 flex items-center justify-between text-[11px] text-gray-500">
                     <span>Status: Enrolled</span>
                     <a
@@ -256,12 +263,11 @@ export default function CourseEnrollments() {
                 Close (ESC)
               </button>
             </div>
-            <div className="relative h-[70vh] w-full bg-[#0B0B10]">
-              <Image
+            <div className="relative h-[70vh] w-full bg-[#0B0B10] flex items-center justify-center">
+              <img
                 src={selectedImage}
                 alt="Enlarged payment screenshot"
-                fill
-                className="object-contain p-4"
+                className="max-h-full max-w-full object-contain p-4"
               />
             </div>
           </div>
