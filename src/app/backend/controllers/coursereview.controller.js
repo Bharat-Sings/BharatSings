@@ -6,10 +6,16 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 const prisma = new PrismaClient();
 
 const createCourseReview = asyncHandler(async(req, res) => {
-    let { user_id, course_id, review_text, rating } = req.body;
+    let { course_id, review_text, rating } = req.body;
+    
+    const user_id = req.user.id;
+
+    if (!user_id) {
+        throw new ApiError(401, "Unauthorized Request");
+    }
 
     if (
-        [user_id, course_id, review_text, rating].some((field) => !field)
+        [course_id, review_text, rating].some((field) => !field)
         ||
         (review_text?.trim() === "")
     ) {

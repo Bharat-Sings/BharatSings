@@ -18,6 +18,7 @@ import {
   MessageSquare,
   Send,
 } from "lucide-react";
+import { useAuth } from "@/app/context/AuthContext";
 
 export default function Details() {
   const [course, setCourse] = useState(null);
@@ -30,9 +31,10 @@ export default function Details() {
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
-  const [userId, setUserId] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
   const [reviewMessage, setReviewMessage] = useState(null);
+
+  const { user, accessToken } = useAuth();
 
   const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URI;
 
@@ -108,6 +110,11 @@ export default function Details() {
     }
 
     try {
+      if (!user) {
+        alert("Please login to submit review");
+        return;
+      }
+
       setSubmittingReview(true);
       setReviewMessage(null);
 
@@ -119,6 +126,10 @@ export default function Details() {
         course_id: parsedCourseId,
         review_text: reviewText,
         rating: Number(rating),
+      }, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
       });
 
       setReviewMessage({ type: "success", text: "Review submitted successfully!" });
@@ -345,21 +356,6 @@ export default function Details() {
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* User ID input */}
-              <div className="space-y-1">
-                <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
-                  User ID
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Enter your User ID"
-                  value={userId}
-                  onChange={(e) => setUserId(e.target.value)}
-                  className="w-full bg-[#13131A] border border-gray-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-[#7F56D9] transition-colors"
-                />
-              </div>
-
               {/* Star Rating Selection */}
               <div className="space-y-1">
                 <label className="text-[11px] font-medium text-gray-400 uppercase tracking-wider">
