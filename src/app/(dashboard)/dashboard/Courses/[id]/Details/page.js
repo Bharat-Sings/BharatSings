@@ -203,16 +203,6 @@ export default function Details() {
                     {course.trainer?.category || "N/A"}
                   </span>
                 </div>
-
-                {/* Country */}
-                <div className="flex items-center justify-between p-2.5 rounded-xl bg-[#1C1C24] border border-gray-800">
-                  <span className="text-gray-400 flex items-center gap-1.5">
-                    <Globe size={13} /> Location
-                  </span>
-                  <span className="text-white font-medium">
-                    {course.trainer?.country || "N/A"}
-                  </span>
-                </div>
               </div>
             </div>
           </div>
