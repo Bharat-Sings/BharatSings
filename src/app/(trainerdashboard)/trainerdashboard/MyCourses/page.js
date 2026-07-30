@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useTrainerAuth } from "@/app/context/TrainerAuthContext";
 import { useRouter } from "next/navigation";
-import { BookOpen, Tag, IndianRupee, Languages, Plus, Library } from "lucide-react";
+import { BookOpen, Tag, IndianRupee, Languages, Plus, Library, Users, ArrowRight } from "lucide-react";
 
 const LANGUAGE_NAMES = {
     1: "Hindi",
@@ -21,17 +21,23 @@ const LANGUAGE_NAMES = {
 
 function CourseCardSkeleton() {
     return (
-        <div className="rounded-2xl bg-[#13131A] border border-gray-800 p-5 animate-pulse">
-            <div className="h-10 w-10 rounded-full bg-gray-800 mb-4" />
-            <div className="h-4 w-3/4 bg-gray-800 rounded mb-2.5" />
+        <div className="rounded-2xl bg-[#13131A] border border-gray-800 p-5 animate-pulse flex flex-col h-[280px]">
+            <div className="flex justify-between items-center mb-4">
+                <div className="h-10 w-10 rounded-full bg-gray-800" />
+                <div className="h-5 w-16 bg-gray-800 rounded-full" />
+            </div>
+            <div className="h-5 w-3/4 bg-gray-800 rounded mb-2.5" />
             <div className="h-3 w-full bg-gray-800/70 rounded mb-1.5" />
             <div className="h-3 w-5/6 bg-gray-800/70 rounded mb-4" />
-            <div className="h-5 w-20 bg-gray-800 rounded-full" />
+            <div className="mt-auto pt-4 border-t border-gray-800/60 flex items-center justify-between">
+                <div className="h-5 w-20 bg-gray-800 rounded-full" />
+                <div className="h-8 w-28 bg-gray-800 rounded-lg" />
+            </div>
         </div>
     );
 }
 
-function CourseCard({ course, index }) {
+function CourseCard({ course, index, onNavigate }) {
     const languageName = LANGUAGE_NAMES[course.language_id];
 
     return (
@@ -39,6 +45,7 @@ function CourseCard({ course, index }) {
             className="group rounded-2xl bg-[#13131A] border border-gray-800 p-5 flex flex-col transition-all duration-300 hover:border-[#7F56D9]/50 hover:-translate-y-1 hover:shadow-[0_20px_40px_-16px_rgba(127,86,217,0.35)] card-reveal"
             style={{ animationDelay: `${Math.min(index, 10) * 60}ms` }}
         >
+            {/* Header / Price Tag */}
             <div className="flex items-start justify-between mb-4">
                 <div className="h-10 w-10 rounded-full bg-[#1C1A2E] border border-[#3A2570] flex items-center justify-center group-hover:border-[#7F56D9] transition-colors">
                     <BookOpen className="h-4.5 w-4.5 text-[#7F56D9]" />
@@ -52,17 +59,20 @@ function CourseCard({ course, index }) {
                 )}
             </div>
 
+            {/* Course Title */}
             <h3 className="text-white font-semibold text-base leading-snug mb-1.5 line-clamp-2">
                 {course.title}
             </h3>
 
+            {/* Course Description */}
             {course.description && (
-                <p className="text-gray-400 text-sm leading-relaxed line-clamp-3 mb-4">
+                <p className="text-gray-400 text-sm leading-relaxed line-clamp-2 mb-4">
                     {course.description}
                 </p>
             )}
 
-            <div className="mt-auto flex items-center flex-wrap gap-2 pt-1">
+            {/* Tags & Metadata */}
+            <div className="flex items-center flex-wrap gap-2 mb-5">
                 {course.category && (
                     <span className="flex items-center gap-1 text-[11px] font-medium text-[#B7A6F2] bg-[#7F56D9]/10 border border-[#7F56D9]/25 rounded-full px-2.5 py-1">
                         <Tag size={11} />
@@ -75,6 +85,22 @@ function CourseCard({ course, index }) {
                         {languageName}
                     </span>
                 )}
+            </div>
+
+            {/* Footer Action */}
+            <div className="mt-auto pt-4 border-t border-gray-800/80 flex items-center justify-between">
+                <span className="text-xs text-gray-500 font-medium">
+                    ID: #{course.id}
+                </span>
+                
+                <button
+                    onClick={() => onNavigate(`/trainerdashboard/MyCourses/${course.id}/CourseEnrollments`)}
+                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-white bg-[#1F1D36] border border-[#3A2570] rounded-xl px-3.5 py-2 hover:bg-[#7F56D9] hover:border-[#7F56D9] transition-all duration-200 group/btn shadow-sm"
+                >
+                    <Users size={13} className="text-[#9E77ED] group-hover/btn:text-white transition-colors" />
+                    <span>View Enrollments</span>
+                    <ArrowRight size={12} className="opacity-60 group-hover/btn:opacity-100 group-hover/btn:translate-x-0.5 transition-all" />
+                </button>
             </div>
         </div>
     );
@@ -215,7 +241,12 @@ export default function MyCourses() {
                 {!coursesLoading && !coursesError && courses.length > 0 && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                         {courses.map((course, index) => (
-                            <CourseCard key={course.id} course={course} index={index} />
+                            <CourseCard 
+                                key={course.id} 
+                                course={course} 
+                                index={index} 
+                                onNavigate={router.push}
+                            />
                         ))}
                     </div>
                 )}
