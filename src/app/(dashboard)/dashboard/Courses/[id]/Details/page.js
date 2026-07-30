@@ -118,11 +118,9 @@ export default function Details() {
       setSubmittingReview(true);
       setReviewMessage(null);
 
-      const parsedUserId = isNaN(Number(userId)) ? userId : Number(userId);
       const parsedCourseId = isNaN(Number(courseId)) ? courseId : Number(courseId);
 
       await axios.post(`${API_BASE}/api/v1/coursereviews/createCourseReview`, {
-        user_id: parsedUserId,
         course_id: parsedCourseId,
         review_text: reviewText,
         rating: Number(rating),
