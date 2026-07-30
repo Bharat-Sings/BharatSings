@@ -12,6 +12,7 @@ import {
   Languages,
   UploadCloud,
   Video,
+  FileAudio,
   CheckCircle2,
   XCircle,
   Loader2,
@@ -19,16 +20,27 @@ import {
   Trash2,
   Rocket,
   QrCode,
+  Film,
 } from "lucide-react";
 
-const MAX_VIDEOS = 5;
-const MIN_VIDEOS_TO_PUBLISH = 2;
-const MAX_VIDEO_SIZE = 300 * 1024 * 1024; // 300MB
-const ALLOWED_VIDEO_TYPES = [
+const MAX_MEDIA_SLOTS = 5;
+const MIN_MEDIA_TO_PUBLISH = 2;
+const MAX_FILE_SIZE = 300 * 1024 * 1024; // 300MB
+
+const ALLOWED_MEDIA_TYPES = [
+  // Video
   "video/mp4",
   "video/webm",
   "video/quicktime",
   "video/x-matroska",
+  // Audio
+  "audio/mpeg",
+  "audio/mp3",
+  "audio/wav",
+  "audio/aac",
+  "audio/ogg",
+  "audio/m4a",
+  "audio/x-m4a",
 ];
 
 const LANGUAGES_WITH_ID = {
@@ -47,10 +59,10 @@ const LANGUAGES_WITH_ID = {
 let localIdCounter = 0;
 function nextLocalId() {
   localIdCounter += 1;
-  return `v-${localIdCounter}`;
+  return `m-${localIdCounter}`;
 }
 
-function emptyVideoSlot() {
+function emptyMediaSlot() {
   return {
     localId: nextLocalId(),
     name: "",
@@ -95,8 +107,8 @@ export default function CourseUpload() {
   const [published, setPublished] = useState(false);
   const [publishing, setPublishing] = useState(false);
 
-  // --- Videos ---
-  const [videos, setVideos] = useState([emptyVideoSlot()]);
+  // --- Lessons (Audio / Video) ---
+  const [mediaSlots, setMediaSlots] = useState([emptyMediaSlot()]);
 
   const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URI;
   const router = useRouter();
@@ -134,7 +146,6 @@ export default function CourseUpload() {
       const token = tokenRef.current;
 
       if (activeId && !isPub && API_BASE && token) {
-        // Use fetch with keepalive to guarantee execution on page unload
         fetch(`${API_BASE}/api/v1/courses/deleteCourse`, {
           method: "DELETE",
           headers: {
@@ -159,63 +170,69 @@ export default function CourseUpload() {
     };
   }, [API_BASE]);
 
-  const uploadedCount = videos.filter((v) => v.status === "done").length;
-  const pendingCount = videos.filter(
-    (v) => v.status === "idle" && v.file && v.name.trim()
+  const uploadedCount = mediaSlots.filter((m) => m.status === "done").length;
+  const pendingCount = mediaSlots.filter(
+    (m) => m.status === "idle" && m.file && m.name.trim()
   ).length;
-  const canAddMoreSlots = videos.length < MAX_VIDEOS;
+  const canAddMoreSlots = mediaSlots.length < MAX_MEDIA_SLOTS;
 
-  // --- Video slot management ---
-  const addVideoSlot = () => {
+  // --- Media slot management ---
+  const addMediaSlot = () => {
     if (!canAddMoreSlots) return;
-    setVideos((prev) => [...prev, emptyVideoSlot()]);
+    setMediaSlots((prev) => [...prev, emptyMediaSlot()]);
   };
 
-  const removeVideoSlot = (localId) => {
-    setVideos((prev) => prev.filter((v) => v.localId !== localId));
+  const removeMediaSlot = (localId) => {
+    setMediaSlots((prev) => prev.filter((m) => m.localId !== localId));
   };
 
-  const updateVideoField = (localId, patch) => {
-    setVideos((prev) =>
-      prev.map((v) => (v.localId === localId ? { ...v, ...patch } : v))
+  const updateMediaField = (localId, patch) => {
+    setMediaSlots((prev) =>
+      prev.map((m) => (m.localId === localId ? { ...m, ...patch } : m))
     );
   };
 
-  const uploadOneVideo = useCallback(
-    async (video) => {
-      if (!video.file || !video.name.trim()) {
-        updateVideoField(video.localId, {
+  const uploadOneMedia = useCallback(
+    async (item) => {
+      if (!item.file || !item.name.trim()) {
+        updateMediaField(item.localId, {
           status: "error",
-          error: "Add a name and choose a file first.",
+          error: "Add a title and choose a file first.",
         });
         return;
       }
-      if (!ALLOWED_VIDEO_TYPES.includes(video.file.type)) {
-        updateVideoField(video.localId, {
+      if (!ALLOWED_MEDIA_TYPES.includes(item.file.type)) {
+        updateMediaField(item.localId, {
           status: "error",
-          error: "Unsupported file type. Use MP4, WebM, MOV, or MKV.",
+          error: "Unsupported format. Use MP4, WebM, MOV, MKV, MP3, WAV, or AAC.",
         });
         return;
       }
-      if (video.file.size > MAX_VIDEO_SIZE) {
-        updateVideoField(video.localId, {
+      if (item.file.size > MAX_FILE_SIZE) {
+        updateMediaField(item.localId, {
           status: "error",
           error: "Maximum size is 300MB.",
         });
         return;
       }
 
-      updateVideoField(video.localId, { status: "uploading", error: null });
+      updateMediaField(item.localId, { status: "uploading", error: null });
 
       try {
         const uploadData = new FormData();
-        uploadData.append("file", video.file);
+        uploadData.append("file", item.file);
         uploadData.append("upload_preset", "course_video");
 
-        const res = await fetch(
-          "https://api.cloudinary.com/v1_1/otg38vo5/video/upload",
-          { method: "POST", body: uploadData }
-        );
+        // Determine Cloudinary resource endpoint based on file type
+        const isAudio = item.file.type.startsWith("audio/");
+        const cloudinaryEndpoint = isAudio
+          ? "https://api.cloudinary.com/v1_1/otg38vo5/video/upload" // Cloudinary handles audio via video endpoint
+          : "https://api.cloudinary.com/v1_1/otg38vo5/video/upload";
+
+        const res = await fetch(cloudinaryEndpoint, {
+          method: "POST",
+          body: uploadData,
+        });
 
         if (!res.ok) {
           const errData = await res.json();
@@ -224,23 +241,23 @@ export default function CourseUpload() {
 
         const data = await res.json();
 
-        const createdVideo = await axios.post(
+        const createdRecord = await axios.post(
           `${API_BASE}/api/v1/videos/createvideo`,
           {
             course_id: courseIdRef.current,
-            name: video.name.trim(),
+            name: item.name.trim(),
             file_path: data.secure_url,
           }
         );
 
-        if (!createdVideo.data?.data?.video?.id) {
-          throw new Error("Video record could not be created.");
+        if (!createdRecord.data?.data?.video?.id) {
+          throw new Error("Lesson record could not be created.");
         }
 
-        updateVideoField(video.localId, { status: "done", error: null });
+        updateMediaField(item.localId, { status: "done", error: null });
       } catch (err) {
         console.error(err);
-        updateVideoField(video.localId, {
+        updateMediaField(item.localId, {
           status: "error",
           error: err.message || "Upload failed.",
         });
@@ -366,21 +383,23 @@ export default function CourseUpload() {
   };
 
   const uploadAllPending = async () => {
-    const toUpload = videos.filter((v) => v.status === "idle" && v.file && v.name.trim());
-    await Promise.all(toUpload.map((v) => uploadOneVideo(v)));
+    const toUpload = mediaSlots.filter(
+      (m) => m.status === "idle" && m.file && m.name.trim()
+    );
+    await Promise.all(toUpload.map((m) => uploadOneMedia(m)));
   };
 
   // --- Publish ---
   const handlePublish = async () => {
-    const uploaded = videos.filter((video) => video.status === "done").length;
+    const uploaded = mediaSlots.filter((m) => m.status === "done").length;
 
-    if (uploaded < MIN_VIDEOS_TO_PUBLISH) {
-      alert(`Please upload at least ${MIN_VIDEOS_TO_PUBLISH} videos.`);
+    if (uploaded < MIN_MEDIA_TO_PUBLISH) {
+      alert(`Please upload at least ${MIN_MEDIA_TO_PUBLISH} lessons (audio or video).`);
       return;
     }
 
-    if (uploaded > MAX_VIDEOS) {
-      alert(`Maximum ${MAX_VIDEOS} videos are allowed.`);
+    if (uploaded > MAX_MEDIA_SLOTS) {
+      alert(`Maximum ${MAX_MEDIA_SLOTS} lessons are allowed.`);
       return;
     }
 
@@ -403,7 +422,7 @@ export default function CourseUpload() {
       setQRFile(null);
       setQRFilePath("");
       setCourseId(null);
-      setVideos([emptyVideoSlot()]);
+      setMediaSlots([emptyMediaSlot()]);
       setCourseError(null);
     } finally {
       setPublishing(false);
@@ -428,11 +447,11 @@ export default function CourseUpload() {
             <BookOpen className="h-6 w-6 text-[#7F56D9]" />
           </div>
           <h1 className="text-2xl font-semibold text-white tracking-wide">
-            {courseId ? "Upload Your Course Videos" : "Create a New Course"}
+            {courseId ? "Upload Your Course Lessons" : "Create a New Course"}
           </h1>
           <p className="mt-1 text-xs text-gray-400">
             {courseId
-              ? "Add at least 2 videos, then publish when you're ready."
+              ? "Add at least 2 audio or video lessons, then publish when ready."
               : "Fill in your course details to get started."}
           </p>
         </div>
@@ -572,139 +591,151 @@ export default function CourseUpload() {
           </form>
         )}
 
-        {/* --- PHASE 2: VIDEO UPLOAD --- */}
+        {/* --- PHASE 2: AUDIO / VIDEO UPLOAD --- */}
         {courseId && (
           <div className="rounded-[24px] bg-[#13131A] p-8 shadow-2xl space-y-6">
             {/* Progress Bar */}
             <div>
               <div className="flex items-center justify-between text-xs mb-1.5">
                 <span className="text-gray-400 font-medium">
-                  {uploadedCount} of {MAX_VIDEOS} videos uploaded
+                  {uploadedCount} of {MAX_MEDIA_SLOTS} lessons uploaded
                 </span>
                 <span
                   className={
-                    uploadedCount >= MIN_VIDEOS_TO_PUBLISH
+                    uploadedCount >= MIN_MEDIA_TO_PUBLISH
                       ? "text-emerald-400 font-medium"
                       : "text-gray-500"
                   }
                 >
-                  {uploadedCount >= MIN_VIDEOS_TO_PUBLISH
+                  {uploadedCount >= MIN_MEDIA_TO_PUBLISH
                     ? "Ready to publish"
-                    : `${MIN_VIDEOS_TO_PUBLISH - uploadedCount} more needed to publish`}
+                    : `${MIN_MEDIA_TO_PUBLISH - uploadedCount} more needed to publish`}
                 </span>
               </div>
               <div className="h-1.5 rounded-full bg-gray-800 overflow-hidden">
                 <div
                   className="h-full rounded-full bg-[#7F56D9] transition-all duration-500"
-                  style={{ width: `${(uploadedCount / MAX_VIDEOS) * 100}%` }}
+                  style={{ width: `${(uploadedCount / MAX_MEDIA_SLOTS) * 100}%` }}
                 />
               </div>
             </div>
 
-            {/* Video Slots List */}
+            {/* Media Slots List */}
             <div className="space-y-3">
-              {videos.map((video, index) => (
-                <div
-                  key={video.localId}
-                  className="rounded-xl bg-[#1C1C24] border border-gray-800 p-4 space-y-3"
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
-                      <Video size={14} /> Video {index + 1}
-                    </span>
+              {mediaSlots.map((item, index) => {
+                const isAudio = item.file?.type?.startsWith("audio/");
+                const isVideo = item.file?.type?.startsWith("video/");
 
-                    {video.status === "done" && (
-                      <span className="flex items-center gap-1 text-xs text-emerald-400">
-                        <CheckCircle2 size={14} /> Uploaded
+                return (
+                  <div
+                    key={item.localId}
+                    className="rounded-xl bg-[#1C1C24] border border-gray-800 p-4 space-y-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider flex items-center gap-1.5">
+                        {isAudio ? (
+                          <FileAudio size={14} className="text-amber-400" />
+                        ) : isVideo ? (
+                          <Video size={14} className="text-indigo-400" />
+                        ) : (
+                          <Film size={14} />
+                        )}
+                        Lesson {index + 1}
                       </span>
-                    )}
-                    {video.status === "uploading" && (
-                      <span className="flex items-center gap-1 text-xs text-[#7F56D9]">
-                        <Loader2 size={14} className="animate-spin" /> Uploading...
-                      </span>
-                    )}
-                    {video.status === "idle" && videos.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => removeVideoSlot(video.localId)}
-                        className="text-gray-500 hover:text-red-400 transition-colors"
-                        aria-label="Remove video slot"
-                      >
-                        <Trash2 size={14} />
-                      </button>
+
+                      {item.status === "done" && (
+                        <span className="flex items-center gap-1 text-xs text-emerald-400">
+                          <CheckCircle2 size={14} /> Uploaded
+                        </span>
+                      )}
+                      {item.status === "uploading" && (
+                        <span className="flex items-center gap-1 text-xs text-[#7F56D9]">
+                          <Loader2 size={14} className="animate-spin" /> Uploading...
+                        </span>
+                      )}
+                      {item.status === "idle" && mediaSlots.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeMediaSlot(item.localId)}
+                          className="text-gray-500 hover:text-red-400 transition-colors"
+                          aria-label="Remove lesson slot"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
+                    </div>
+
+                    {item.status !== "done" && (
+                      <>
+                        <input
+                          type="text"
+                          value={item.name}
+                          onChange={(e) =>
+                            updateMediaField(item.localId, { name: e.target.value })
+                          }
+                          placeholder="Lesson title (e.g. Lesson 1: Vocal Warmups)"
+                          disabled={item.status === "uploading"}
+                          className="w-full bg-[#0F0F14] border border-gray-800 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#7F56D9] transition-all disabled:opacity-50"
+                        />
+
+                        <label
+                          className={`flex items-center justify-center gap-2 rounded-lg border border-dashed border-gray-700 py-3 text-xs text-gray-400 transition-colors ${
+                            item.status === "uploading"
+                              ? "opacity-50"
+                              : "cursor-pointer hover:border-[#7F56D9] hover:text-[#7F56D9]"
+                          }`}
+                        >
+                          <UploadCloud size={16} />
+                          {item.file ? item.file.name : "Choose audio or video file"}
+                          <input
+                            type="file"
+                            accept="video/mp4,video/webm,video/quicktime,video/x-matroska,audio/mpeg,audio/mp3,audio/wav,audio/aac,audio/ogg,audio/m4a"
+                            disabled={item.status === "uploading"}
+                            onChange={(e) =>
+                              updateMediaField(item.localId, {
+                                file: e.target.files?.[0] || null,
+                                status: "idle",
+                                error: null,
+                              })
+                            }
+                            className="hidden"
+                          />
+                        </label>
+
+                        {item.error && (
+                          <p className="flex items-center gap-1.5 text-xs text-red-400">
+                            <XCircle size={13} /> {item.error}
+                          </p>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => uploadOneMedia(item)}
+                          disabled={
+                            item.status === "uploading" ||
+                            !item.file ||
+                            !item.name.trim()
+                          }
+                          className="w-full text-xs font-semibold text-[#7F56D9] border border-[#7F56D9]/40 rounded-lg py-2 hover:bg-[#7F56D9]/10 transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
+                        >
+                          Upload this lesson
+                        </button>
+                      </>
                     )}
                   </div>
-
-                  {video.status !== "done" && (
-                    <>
-                      <input
-                        type="text"
-                        value={video.name}
-                        onChange={(e) =>
-                          updateVideoField(video.localId, { name: e.target.value })
-                        }
-                        placeholder="Video title (e.g. Lesson 1: Breath Control)"
-                        disabled={video.status === "uploading"}
-                        className="w-full bg-[#0F0F14] border border-gray-800 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-[#7F56D9] transition-all disabled:opacity-50"
-                      />
-
-                      <label
-                        className={`flex items-center justify-center gap-2 rounded-lg border border-dashed border-gray-700 py-3 text-xs text-gray-400 transition-colors ${
-                          video.status === "uploading"
-                            ? "opacity-50"
-                            : "cursor-pointer hover:border-[#7F56D9] hover:text-[#7F56D9]"
-                        }`}
-                      >
-                        <UploadCloud size={16} />
-                        {video.file ? video.file.name : "Choose a video file"}
-                        <input
-                          type="file"
-                          accept="video/mp4,video/webm,video/quicktime,video/x-matroska"
-                          disabled={video.status === "uploading"}
-                          onChange={(e) =>
-                            updateVideoField(video.localId, {
-                              file: e.target.files?.[0] || null,
-                              status: "idle",
-                              error: null,
-                            })
-                          }
-                          className="hidden"
-                        />
-                      </label>
-
-                      {video.error && (
-                        <p className="flex items-center gap-1.5 text-xs text-red-400">
-                          <XCircle size={13} /> {video.error}
-                        </p>
-                      )}
-
-                      <button
-                        type="button"
-                        onClick={() => uploadOneVideo(video)}
-                        disabled={
-                          video.status === "uploading" ||
-                          !video.file ||
-                          !video.name.trim()
-                        }
-                        className="w-full text-xs font-semibold text-[#7F56D9] border border-[#7F56D9]/40 rounded-lg py-2 hover:bg-[#7F56D9]/10 transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
-                      >
-                        Upload this video
-                      </button>
-                    </>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
 
-            {/* Action Bar for Adding Video Slots & Bulk Uploading */}
+            {/* Action Bar for Adding Slots & Bulk Uploading */}
             <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
               {canAddMoreSlots && (
                 <button
                   type="button"
-                  onClick={addVideoSlot}
+                  onClick={addMediaSlot}
                   className="w-full sm:w-1/2 flex items-center justify-center gap-2 border border-gray-800 bg-[#1C1C24] hover:bg-gray-800/60 text-xs font-medium text-gray-300 py-2.5 rounded-xl transition-all"
                 >
-                  <Plus size={14} /> Add Video Slot
+                  <Plus size={14} /> Add Lesson Slot
                 </button>
               )}
 
@@ -726,8 +757,8 @@ export default function CourseUpload() {
                 onClick={handlePublish}
                 disabled={
                   publishing ||
-                  uploadedCount < MIN_VIDEOS_TO_PUBLISH ||
-                  videos.some((v) => v.status === "uploading")
+                  uploadedCount < MIN_MEDIA_TO_PUBLISH ||
+                  mediaSlots.some((m) => m.status === "uploading")
                 }
                 className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#7F56D9] py-3.5 text-sm font-semibold tracking-wide text-white uppercase transition-all duration-200 hover:bg-[#6C47C2] active:scale-[0.99] focus:outline-none shadow-lg shadow-purple-600/20 disabled:opacity-40"
               >
