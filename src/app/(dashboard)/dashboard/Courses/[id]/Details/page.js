@@ -442,7 +442,7 @@ export default function Details() {
                           U
                         </div>
                         <span className="text-xs font-medium text-gray-300">
-                          {rev.user.name}
+                          {rev.user.display_name}
                         </span>
                       </div>
 
