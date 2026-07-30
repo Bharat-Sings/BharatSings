@@ -64,12 +64,12 @@ const findEnrollmentsByCourseId = asyncHandler(async (req, res) => {
     const enrollments = await prisma.enrollment.findMany({
         where: {
             course_id: parseInt(course_id, 10)
+        },
+        include: {
+            user: true,
+            screenshot: true,
         }
     });
-
-    if (!enrollments) {
-        throw new ApiError(500, "Error finding enrollments");
-    }
 
     return res
     .status(200)
