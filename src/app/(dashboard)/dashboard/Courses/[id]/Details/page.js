@@ -156,10 +156,6 @@ export default function Details() {
                 <CheckCircle size={16} className="text-emerald-400 shrink-0 mt-0.5" />
                 <span>Taught in <strong>{course.language?.name || "English"}</strong> for optimal comprehension.</span>
               </li>
-              <li className="flex items-start gap-3 text-xs sm:text-sm text-gray-300">
-                <CheckCircle size={16} className="text-emerald-400 shrink-0 mt-0.5" />
-                <span>Direct mentorship from an industry experienced trainer.</span>
-              </li>
             </ul>
 
             <div className="rounded-xl bg-[#1C1C24] p-4 border border-gray-800 flex items-center gap-3">
@@ -206,9 +202,7 @@ export default function Details() {
               </div>
             </div>
           </div>
-
         </div>
-
       </div>
     </div>
   );
